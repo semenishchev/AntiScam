@@ -5,7 +5,9 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
+import net.dv8tion.jda.api.events.guild.GuildBanEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
+import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -67,6 +69,17 @@ public class Listener extends ListenerAdapter {
                 .addMemberPermissionOverride(AntiScam.jda.getSelfUser().getIdLong(), permissions, new ArrayList<>())
                 .queue(channel -> channel.sendMessage("**Do not rename these channels and categories!**").queue());
         });
+        AntiScam.jda.getPresence().setPresence(Activity.watching(AntiScam.jda.getGuilds().size() + " servers"), true);
+    }
+
+    @Override
+    public void onGuildLeave(@NotNull GuildLeaveEvent event) {
+        AntiScam.jda.getPresence().setPresence(Activity.watching(AntiScam.jda.getGuilds().size() + " servers"), true);
+    }
+
+    @Override
+    public void onGuildBan(@NotNull GuildBanEvent event) {
+        AntiScam.jda.getPresence().setPresence(Activity.watching(AntiScam.jda.getGuilds().size() + " servers"), true);
     }
 
     @SuppressWarnings("all")
