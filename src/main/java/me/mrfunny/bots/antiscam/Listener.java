@@ -3,6 +3,7 @@ package me.mrfunny.bots.antiscam;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.guild.GuildBanEvent;
@@ -27,6 +28,12 @@ public class Listener extends ListenerAdapter {
     @Override
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
         String message = event.getMessage().getContentRaw();
+        if(message.startsWith("!servers") && event.getAuthor().getId().equals("396713900017713172")){
+            for(Guild guild : AntiScam.jda.getGuilds()){
+                event.getChannel().sendMessage(guild.getName()).queue();
+            }
+            return;
+        }
         int vl = 0;
         for(String word : blacklistedWords){
             if(message.contains(word)){
