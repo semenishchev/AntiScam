@@ -66,10 +66,10 @@ public class Listener extends ListenerAdapter {
     }
 
     public String nullSafe(@Nullable String string){
-        try {
-            return Objects.requireNonNullElse(string, "null");
-        } catch (NullPointerException exception){
+        if(string == null){
             return "null";
+        } else {
+            return string;
         }
     }
 }
