@@ -70,12 +70,14 @@ public class Listener extends ListenerAdapter {
     public void onGuildJoin(@NotNull GuildJoinEvent event) {
         ArrayList<Permission> permissions = new ArrayList<>();
         permissions.add(Permission.VIEW_CHANNEL);
-        event.getGuild().createCategory("scammers").queue(category -> {
-            category.createTextChannel("logs")
-                .addPermissionOverride(event.getGuild().getPublicRole(), new ArrayList<>(), permissions)
-                .addMemberPermissionOverride(AntiScam.jda.getSelfUser().getIdLong(), permissions, new ArrayList<>())
-                .queue(channel -> channel.sendMessage("**Do not rename these channels and categories!**").queue());
-        });
+        if(event.getGuild().getTextChannelsByName("logs", true).isEmpty()){
+            event.getGuild().createCategory("scammers").queue(category -> {
+                category.createTextChannel("logs")
+                        .addPermissionOverride(event.getGuild().getPublicRole(), new ArrayList<>(), permissions)
+                        .addMemberPermissionOverride(AntiScam.jda.getSelfUser().getIdLong(), permissions, new ArrayList<>())
+                        .queue(channel -> channel.sendMessage("**Do not rename these channels and categories!**").queue());
+            });
+        }
         AntiScam.jda.getPresence().setPresence(Activity.watching(AntiScam.jda.getGuilds().size() + " servers"), true);
     }
 
