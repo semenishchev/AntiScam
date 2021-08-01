@@ -2,9 +2,9 @@ package me.mrfunny.bots.antiscam;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.IPermissionHolder;
-import net.dv8tion.jda.api.entities.PermissionOverride;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -12,11 +12,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class Listener extends ListenerAdapter {
 
     private final String[] blacklistedWords = {"сначал", "эпик", "стим", "нитро", "ненадеж", "ненадёж", "разда", "нитру", "скин", "успел", "everyone"};
+
+    @Override
+    public void onReady(@NotNull ReadyEvent event) {
+        AntiScam.jda.getPresence().setPresence(Activity.watching(AntiScam.jda.getGuilds().size() + " servers"), true);
+    }
 
     @Override
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
@@ -65,6 +69,7 @@ public class Listener extends ListenerAdapter {
         });
     }
 
+    @SuppressWarnings("all")
     public String nullSafe(@Nullable String string){
         if(string == null){
             return "null";
