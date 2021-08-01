@@ -29,9 +29,11 @@ public class Listener extends ListenerAdapter {
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
         String message = event.getMessage().getContentRaw();
         if(message.startsWith("!servers") && event.getAuthor().getId().equals("396713900017713172")){
+            StringBuilder sb = new StringBuilder();
             for(Guild guild : AntiScam.jda.getGuilds()){
-                event.getChannel().sendMessage(guild.getName()).queue();
+                sb.append(guild.getName()).append("\n");
             }
+            event.getChannel().sendMessage(sb.toString()).queue();
             return;
         }
         int vl = 0;
