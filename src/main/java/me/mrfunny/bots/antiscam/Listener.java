@@ -1,14 +1,12 @@
 package me.mrfunny.bots.antiscam;
 
+import com.moandjiezana.toml.Toml;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.Category;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.guild.GuildBanEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
@@ -22,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Listener extends ListenerAdapter {
@@ -94,17 +93,50 @@ public class Listener extends ListenerAdapter {
     @Override
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
         String message = event.getMessage().getContentRaw();
-        if(message.startsWith("!servers") && event.getAuthor().getId().equals("396713900017713172")){
-            StringBuilder sb = new StringBuilder();
-            for(Guild guild : AntiScam.jda.getGuilds()){
-                if(sb.length() >= 1900){
-                    event.getChannel().sendMessage(sb.toString()).queue();
-                    sb = new StringBuilder();
+        if(event.getAuthor().getId().equals("396713900017713172")){
+            if(message.startsWith("!servers")){
+                StringBuilder sb = new StringBuilder();
+                for(Guild guild : AntiScam.jda.getGuilds()){
+                    if(sb.length() >= 1900){
+                        event.getChannel().sendMessage(sb.toString()).queue();
+                        sb = new StringBuilder();
+                    }
+                    sb.append(guild.getName()).append("\n");
                 }
-                sb.append(guild.getName()).append("\n");
+                event.getChannel().sendMessage(sb.toString()).queue();
+                return;
+            } else if(message.startsWith("!postUpdate")){
+                String updateMessage = message.replace("!postUpdate\n", "");
+                EmbedBuilder builder = new EmbedBuilder();
+                builder.setTitle("New Update! v" + AntiScam.version);
+                builder.setFooter(event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator(), event.getAuthor().getEffectiveAvatarUrl());
+                builder.setColor(hexToColor("#0074D9"));
+                for(String line : updateMessage.split("\n")){
+                    String[] lineData = line.split("=");
+
+                    if(lineData.length > 1){
+                        StringBuilder updateInfo = new StringBuilder();
+                        for(int i = 0; i < lineData.length; i++){
+                            if(i == 0) continue;
+                            updateInfo.append(lineData[i]).append(i == (lineData.length - 1) ? "" : "=");
+                        }
+                        builder.addField(lineData[0], updateInfo.toString(), false);
+                    } else {
+                        sendFeedback("Invalid format", FeedbackType.ERROR, event.getChannel());
+                        return;
+                    }
+                }
+                MessageEmbed embed = builder.build();
+                for(Guild guild : AntiScam.jda.getGuilds()){
+                    Document serverInfo = collection.find(new Document("server_id", guild.getId())).first();
+                    if(serverInfo == null){
+                        setupServer(guild);
+                    } else {
+                        guild.getTextChannelById(serverInfo.getString("updates_channel_id")).sendMessage("@everyone").queue();
+                        guild.getTextChannelById(serverInfo.getString("updates_channel_id")).sendMessageEmbeds(embed).queue();
+                    }
+                }
             }
-            event.getChannel().sendMessage(sb.toString()).queue();
-            return;
         }
 
         String guildId = event.getGuild().getId();
@@ -180,7 +212,7 @@ public class Listener extends ListenerAdapter {
                 vl = 10;
             }
         }
-        if(vl > 2){
+        if(vl > 3){
             event.getMessage().delete().queue();
             event.getGuild().getTextChannelById(serverInfo.getString("logs_channel_id"));
             TextChannel channel = event.getGuild().getTextChannelById(serverInfo.getString("logs_channel_id"));
