@@ -120,7 +120,7 @@ public class Listener extends ListenerAdapter {
                             if(i == 0) continue;
                             updateInfo.append(lineData[i]).append(i == (lineData.length - 1) ? "" : "=");
                         }
-                        builder.addField(lineData[0], updateInfo.toString(), false);
+                        builder.addField(lineData[0], updateInfo.toString().replaceAll("\\n", "\n"), false);
                     } else {
                         sendFeedback("Invalid format", FeedbackType.ERROR, event.getChannel());
                         return;
