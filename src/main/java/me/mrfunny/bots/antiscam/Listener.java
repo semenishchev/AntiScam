@@ -134,7 +134,6 @@ public class Listener extends ListenerAdapter {
                     if(serverInfo == null){
                         setupServer(guild);
                     } else {
-                        guild.getTextChannelById(serverInfo.getString("updates_channel_id")).sendMessage("@everyone").queue();
                         guild.getTextChannelById(serverInfo.getString("updates_channel_id")).sendMessageEmbeds(embed).queue();
                     }
                 }
