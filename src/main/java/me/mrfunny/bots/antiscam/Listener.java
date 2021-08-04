@@ -244,6 +244,8 @@ public class Listener extends ListenerAdapter {
                 vl = 10;
             } else if(word.contains("nitro") && !word.startsWith("https://discord.gift")){
                 vl = 10;
+            } else if(word.contains("stea") && (!word.startsWith("https://steamcommunity.com/") || !word.startsWith("https://store.steampowered.com/"))){
+                vl = 10;
             }
         }
         if(vl > 3){
