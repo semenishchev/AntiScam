@@ -113,7 +113,7 @@ public class Listener extends ListenerAdapter {
                         event.getChannel().sendMessage(sb.toString()).queue();
                         sb = new StringBuilder();
                     }
-                    sb.append(guild.getName()).append("\n");
+                    sb.append(guild.getName()).append(" - ").append(guild.getMemberCount()).append("\n");
                 }
                 event.getChannel().sendMessage(sb.toString()).queue();
                 return;
