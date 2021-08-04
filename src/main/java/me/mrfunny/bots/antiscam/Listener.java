@@ -238,14 +238,17 @@ public class Listener extends ListenerAdapter {
                 vl++;
             }
         }
-        for(String word : message.split(" ")){
-            if(!word.startsWith("http")) continue;
-            if(word.contains("tradeOffer") && !word.startsWith("https://steamcommunity.com")){
-                vl = 10;
-            } else if(word.contains("nitro") && !word.startsWith("https://discord.gift")){
-                vl = 10;
-            } else if(word.contains("stea") && (!word.startsWith("https://steamcommunity.com/") || !word.startsWith("https://store.steampowered.com/"))){
-                vl = 10;
+        for(String line : message.split("\n")){
+            for(String word : line.split(" ")){
+                if(!word.startsWith("http")) continue;
+                if(word.contains("tradeOffer") && !word.startsWith("https://steamcommunity.com")){
+                    vl = 10;
+                } else if(word.contains("nitro") && !word.startsWith("https://discord.gift")){
+                    vl = 10;
+                } else if(word.contains("stea") && (!word.startsWith("https://steamcommunity.com/") || !word.startsWith("https://store.steampowered.com/"))){
+                    vl = 10;
+                }
+                System.out.println((!word.startsWith("https://steamcommunity.com/") || !word.startsWith("https://store.steampowered.com/")));
             }
         }
         if(vl > 3){
