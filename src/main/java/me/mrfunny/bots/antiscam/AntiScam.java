@@ -7,9 +7,9 @@ import javax.security.auth.login.LoginException;
 
 public class AntiScam {
     public static JDA jda;
-    public static String version = "1.0";
+    public static String version = "1.1";
 
     public static void main(String[] args) throws LoginException {
-        jda = JDABuilder.createDefault(SuperSecretClass.token).addEventListeners(new Listener()).build();
+        jda = JDABuilder.createDefault(SuperSecretClass.token).addEventListeners(new Listener(SuperSecretClass.webhookUrl)).build();
     }
 }

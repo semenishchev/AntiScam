@@ -1,9 +1,11 @@
 package me.mrfunny.bots.antiscam;
 
-import com.moandjiezana.toml.Toml;
+import club.minnced.discord.webhook.WebhookClient;
+import club.minnced.discord.webhook.WebhookClientBuilder;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
+import com.sun.deploy.util.ArrayUtil;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
@@ -14,19 +16,21 @@ import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.internal.JDAImpl;
+import org.apache.commons.lang3.ArrayUtils;
 import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
 
-import static net.dv8tion.jda.api.requests.ErrorResponse.CANNOT_SEND_TO_USER;
-
 public class Listener extends ListenerAdapter {
+    private final WebhookClient client;
+    public Listener(String webhookUrl){
+        client = WebhookClient.withUrl(webhookUrl);
+    }
 
     private final String[] blacklistedWords = {"сначал", "эпик", "стим", "нитро", "ненадеж", "ненадёж", "разда", "нитру", "скин", "успел", "everyone"};
     private MongoCollection<Document> collection;
@@ -101,14 +105,6 @@ public class Listener extends ListenerAdapter {
         textChannel.sendMessageEmbeds(new EmbedBuilder().setColor(color).setTitle(sb.toString()).build()).queue();
     }
 
-    private String buildCommands(String... commands){
-        StringBuilder sb = new StringBuilder();
-        for (String command : commands) {
-            sb.append(command).append("\n");
-        }
-        return sb.toString();
-    }
-
     @Override
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
         String message = event.getMessage().getContentRaw();
@@ -145,6 +141,7 @@ public class Listener extends ListenerAdapter {
                         return;
                     }
                 }
+
                 MessageEmbed embed = builder.build();
                 for(Guild guild : AntiScam.jda.getGuilds()){
                     Document serverInfo = collection.find(new Document("server_id", guild.getId())).first();
@@ -154,6 +151,22 @@ public class Listener extends ListenerAdapter {
                         guild.getTextChannelById(serverInfo.getString("updates_channel_id")).sendMessageEmbeds(embed).queue();
                     }
                 }
+            } else if(message.startsWith("!updateState")){
+                try {
+                    String[] messageData = message.replace("!updateState", "").split(" ");
+                    Document serverInfo = collection.find(new Document("server_id", messageData[1])).first();
+                    if(serverInfo != null){
+                        AntiScam.jda.getGuildById(messageData[1]).getTextChannelById(serverInfo.getString("updates_channel_id")).sendMessageEmbeds(
+                                new EmbedBuilder().setColor(Color.GREEN).setTitle("Your report has been viewed!")
+                                        .addField("Comment of developer", String.join(" ", ArrayUtils.removeAll(messageData, 0, 1)), false).build()
+                        ).queue();
+                    } else {
+                        sendFeedback("Server not found", FeedbackType.ERROR, event.getChannel());
+                    }
+                } catch (Exception exception){
+                    sendFeedback(exception.toString(), FeedbackType.ERROR, event.getChannel());
+                }
+
             }
         }
 
@@ -205,6 +218,10 @@ public class Listener extends ListenerAdapter {
                     case "help":
                         sendHelp(event.getChannel(), prefix);
                         break;
+                    case "error":
+                        client.send("Guild ID: (" + event.getGuild().getId() + ") " + String.join(" ", ArrayUtils.remove(command, 0)));
+                        sendFeedback("Your message has been sent. We will fix your issue as soon as possible", FeedbackType.OK, event.getChannel());
+                        break;
                 }
             } else {
                 sendFeedback("You don't have enough permissions to execute this command. Note that only user with \"Administrator\" permission can execute this command", FeedbackType.ERROR, event.getChannel());
@@ -252,6 +269,7 @@ public class Listener extends ListenerAdapter {
                 .addField(prefix + "prefix <new_prefix>", "Sets up new prefix for me", false)
                 .addField(prefix + "setUpdatesChannel #channel", "Sets channel for my updates", false)
                 .addField(prefix + "setLogsChannel #channel", "Sets channel where logs will appear (possible scam message etc.)", false)
+                .addField(prefix + "error <your message>", "If you get some error, or bot does not delete scam messages or vice versa deletes normal messages", false)
                 .build()).queue();
     }
 
@@ -275,7 +293,6 @@ public class Listener extends ListenerAdapter {
     public void updatePresence(){
         AntiScam.jda.getPresence().setPresence(Activity.watching("a!help | " + AntiScam.jda.getGuilds().size() + " servers"), true);
     }
-
 
     public String nullSafe(@Nullable String string){
         if(string == null){
