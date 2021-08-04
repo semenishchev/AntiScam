@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 public class Listener extends ListenerAdapter {
@@ -28,6 +28,7 @@ public class Listener extends ListenerAdapter {
     public Listener(String webhookUrl){
         client = WebhookClient.withUrl(webhookUrl);
     }
+    private final HashMap<String, Occurrence> occurrences = new HashMap<>();
 
     private final String[] blacklistedWords = {"сначал", "эпик", "стим", "нитро", "ненадеж", "ненадёж", "разда", "нитру", "скин", "успел", "everyone"};
     private MongoCollection<Document> collection;
@@ -42,6 +43,20 @@ public class Listener extends ListenerAdapter {
                 setupServer(guild);
             }
         }
+
+        Timer t = new Timer();
+        t.scheduleAtFixedRate(new TimerTask() {
+
+            @Override
+            public void run() {
+                for(Occurrence occurrence : occurrences.values()){
+                    if((System.currentTimeMillis() - occurrence.getLastOccurrence()) >= 600000){
+                        occurrences.remove(occurrence.getId());
+                    }
+                }
+
+            }
+        }, 1000,60000);
     }
 
     private void setupServer(Guild guild){
@@ -253,9 +268,19 @@ public class Listener extends ListenerAdapter {
         }
         if(vl > 3){
             event.getMessage().delete().queue();
+            if(occurrences.containsKey(event.getAuthor().getId())){
+                Occurrence occurrence = occurrences.get(event.getAuthor().getId());
+                occurrence.addOccurrence();
+            } else {
+                Occurrence occurrence = new Occurrence(event.getAuthor().getId());
+                occurrences.put(event.getAuthor().getId(), occurrence);
+            }
             event.getGuild().getTextChannelById(serverInfo.getString("logs_channel_id"));
             TextChannel channel = event.getGuild().getTextChannelById(serverInfo.getString("logs_channel_id"));
-            channel.sendMessage("@everyone").queue();
+            Occurrence occurrence = occurrences.get(event.getAuthor().getId());
+            if((System.currentTimeMillis() - occurrence.getLastOccurrence()) >= 600000){
+                channel.sendMessage("@everyone").queue();
+            }
             channel.sendMessageEmbeds(new EmbedBuilder()
                 .setTitle("User "
                     + nullSafe(event.getMember().getEffectiveName())
