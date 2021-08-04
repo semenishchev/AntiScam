@@ -41,11 +41,13 @@ public class Listener extends ListenerAdapter {
     }
 
     private void setupServer(Guild guild){
-        Category category = guild.createCategory("AntiScam").complete();
+        ArrayList<Permission> permissions = new ArrayList<>();
+        permissions.add(Permission.VIEW_CHANNEL);
+        Category category = guild.createCategory("AntiScam").addRolePermissionOverride(guild.getPublicRole().getIdLong(), new ArrayList<>(), permissions).complete();
         List<TextChannel> possibleUpdatesChannels = guild.getTextChannelsByName("antiscam-updates", true);
         List<TextChannel> possibleLogsChannels = guild.getTextChannelsByName("logs", true);
-        TextChannel updatesChannel = (possibleUpdatesChannels.isEmpty() ? category.createTextChannel("antiscam-updates").complete() : possibleUpdatesChannels.get(0));
-        TextChannel logsChannel = (possibleLogsChannels.isEmpty() ? category.createTextChannel("logs").complete() : possibleLogsChannels.get(0));
+        TextChannel updatesChannel = (possibleUpdatesChannels.isEmpty() ? category.createTextChannel("antiscam-updates").addRolePermissionOverride(guild.getPublicRole().getIdLong(), new ArrayList<>(), permissions).complete() : possibleUpdatesChannels.get(0));
+        TextChannel logsChannel = (possibleLogsChannels.isEmpty() ? category.createTextChannel("logs").addRolePermissionOverride(guild.getPublicRole().getIdLong(), new ArrayList<>(), permissions).complete() : possibleLogsChannels.get(0));
         logsChannel.sendMessage("Thanks for adding me! My current prefix is a!").queue(message -> sendHelp(logsChannel, "a!"));
         if(collection.find(new Document("server_id", guild.getId())).first() == null){
             collection.insertOne(new Document("server_id", guild.getId()).append("logs_channel_id", logsChannel.getId()).append("prefix", "a!").append("updates_channel_id", updatesChannel.getId()));
