@@ -1,8 +1,12 @@
 package me.mrfunny.bots.antiscam;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
@@ -11,18 +15,80 @@ import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.internal.JDAImpl;
+import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.awt.*;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Listener extends ListenerAdapter {
 
     private final String[] blacklistedWords = {"сначал", "эпик", "стим", "нитро", "ненадеж", "ненадёж", "разда", "нитру", "скин", "успел", "everyone"};
+    private MongoCollection<Document> collection;
 
     @Override
     public void onReady(@NotNull ReadyEvent event) {
-        AntiScam.jda.getPresence().setPresence(Activity.watching(AntiScam.jda.getGuilds().size() + " servers"), true);
+        updatePresence();
+        MongoClient client = MongoClients.create(SuperSecretClass.connectionString);
+        collection = client.getDatabase("antiscam").getCollection("servers");
+        for(Guild guild : AntiScam.jda.getGuilds()){
+            if(collection.find(new Document("server_id", guild.getId())).first() == null){
+                setupServer(guild);
+            }
+        }
+    }
+
+    private void setupServer(Guild guild){
+        Category category = guild.createCategory("AntiScam").complete();
+        List<TextChannel> possibleUpdatesChannels = guild.getTextChannelsByName("antiscam-updates", true);
+        List<TextChannel> possibleLogsChannels = guild.getTextChannelsByName("logs", true);
+        TextChannel updatesChannel = (possibleUpdatesChannels.isEmpty() ? category.createTextChannel("antiscam-updates").complete() : possibleUpdatesChannels.get(0));
+        TextChannel logsChannel = (possibleLogsChannels.isEmpty() ? category.createTextChannel("logs").complete() : possibleLogsChannels.get(0));
+        logsChannel.sendMessage("Thanks for adding me! My current prefix is a!").queue(message -> sendHelp(logsChannel, "a!"));
+        if(collection.find(new Document("server_id", guild.getId())).first() == null){
+            collection.insertOne(new Document("server_id", guild.getId()).append("logs_channel_id", logsChannel.getId()).append("prefix", "a!").append("updates_channel_id", updatesChannel.getId()));
+        }
+
+    }
+
+    public static Color hexToColor(String colorString) {
+        return new Color(
+                Integer.valueOf( colorString.substring( 1, 3 ), 16 ),
+                Integer.valueOf( colorString.substring( 3, 5 ), 16 ),
+                Integer.valueOf( colorString.substring( 5, 7 ), 16 ) );
+    }
+
+    public void sendFeedback(String feedbackMessage, FeedbackType feedbackType, TextChannel textChannel){
+        StringBuilder sb = new StringBuilder();
+        Color color = Color.DARK_GRAY;
+        switch (feedbackType){
+
+            case ERROR:
+                sb.append("Error: ");
+                color = hexToColor("#FF4136");
+                break;
+            case WARN:
+                color = hexToColor("#FF851B");
+                sb.append("Warning: ");
+                break;
+            case OK:
+                color = hexToColor("#2ECC40");
+            case NORM:
+                break;
+        }
+        sb.append(feedbackMessage);
+        textChannel.sendMessageEmbeds(new EmbedBuilder().setColor(color).setTitle(sb.toString()).build()).queue();
+    }
+
+    private String buildCommands(String... commands){
+        StringBuilder sb = new StringBuilder();
+        for (String command : commands) {
+            sb.append(command).append("\n");
+        }
+        return sb.toString();
     }
 
     @Override
@@ -40,6 +106,66 @@ public class Listener extends ListenerAdapter {
             event.getChannel().sendMessage(sb.toString()).queue();
             return;
         }
+
+        String guildId = event.getGuild().getId();
+
+        Document serverInfo = collection.find(new Document("server_id", guildId)).first();
+
+        if(serverInfo == null){
+            setupServer(event.getGuild());
+        }
+        if(event.getAuthor().isBot() || event.getAuthor().isSystem()) return;
+        String prefix = serverInfo != null ? serverInfo.getString("prefix") : "a!";
+        if(message.startsWith(prefix)){
+            if(event.getMember().hasPermission(Permission.ADMINISTRATOR)){
+                String[] command = message.substring(prefix.length()).intern().split(" ");
+                switch (command[0]){
+                    case "prefix":
+                        if(command.length != 2){
+                            sendFeedback("Unknown args. Usage: " + prefix + "prefix <new_prefix>", FeedbackType.ERROR, event.getChannel());
+                            break;
+                        }
+                        collection.updateOne(new Document("server_id", guildId), new Document("$set", new Document("prefix", command[1])));
+                        sendFeedback("Successfully set new prefix: " + command[1], FeedbackType.OK, event.getChannel());
+                        break;
+                    case "setLogsChannel":
+                        if(command.length != 2){
+                            sendFeedback("Unknown args. Usage: " + prefix + "setLogsChannel #channel (as mention)", FeedbackType.ERROR, event.getChannel());
+                            break;
+                        }
+                        if(event.getMessage().getMentionedChannels().isEmpty()){
+                            sendFeedback("Unknown args. Usage: " + prefix + "setLogsChannel #channel (as mention)", FeedbackType.ERROR, event.getChannel());
+                            break;
+                        }
+                        collection.updateOne(new Document("server_id", guildId), new Document("$set", new Document("logs_channel_id", event.getMessage().getMentionedChannels().get(0).getId())));
+                        sendFeedback("Successfully set new logs channel: #" + event.getGuild().getTextChannelById(command[1].replace("#", "").replaceAll("<", "").replaceAll(">", "")).getName(), FeedbackType.OK, event.getChannel());
+                        break;
+                    case "setUpdatesChannel":
+                        if(command.length != 2){
+                            sendFeedback("Unknown args. Usage: " + prefix + "setLogsChannel #channel (as mention)", FeedbackType.ERROR, event.getChannel());
+                            break;
+                        }
+                        if(event.getMessage().getMentionedChannels().isEmpty()){
+                            sendFeedback("Unknown args. Usage: " + prefix + "setLogsChannel #channel (as mention)", FeedbackType.ERROR, event.getChannel());
+                            break;
+                        }
+                        collection.updateOne(new Document("server_id", guildId), new Document("$set", new Document("updates_channel_id", event.getMessage().getMentionedChannels().get(0).getId())));
+                        sendFeedback("Successfully set new updates channel: #" + event.getGuild().getTextChannelById(command[1].replace("#", "").replaceAll("<", "").replaceAll(">", "")).getName(), FeedbackType.OK, event.getChannel());
+                        break;
+                    case "help":
+                        sendHelp(event.getChannel(), prefix);
+                        break;
+                }
+            } else {
+                sendFeedback("You don't have enough permissions to execute this command. Note that only user with \"Administrator\" permission can execute this command", FeedbackType.ERROR, event.getChannel());
+            }
+        }
+
+        if(message.equals("<@!" + AntiScam.jda.getSelfUser().getId() + ">")){
+            event.getChannel().sendMessage("My current prefix is " + prefix).queue();
+            sendHelp(event.getChannel(), prefix);
+        }
+
         int vl = 0;
         for(String word : blacklistedWords){
             if(message.contains(word)){
@@ -56,48 +182,53 @@ public class Listener extends ListenerAdapter {
         }
         if(vl > 2){
             event.getMessage().delete().queue();
-            for(TextChannel channel : event.getGuild().getCategoriesByName("scammers", true).get(0).getTextChannels()){
-                channel.sendMessage("@everyone").queue();
-                channel.sendMessageEmbeds(new EmbedBuilder()
-                    .setTitle("User "
-                        + nullSafe(event.getMember().getEffectiveName())
-                        + "#"
-                        + event.getAuthor().getDiscriminator()
-                        + " (ID: "
-                        + event.getAuthor().getId() + ")"
-                        ).addField("Message", message, false)
-                        .build()).queue();
-            }
-
+            event.getGuild().getTextChannelById(serverInfo.getString("logs_channel_id"));
+            TextChannel channel = event.getGuild().getTextChannelById(serverInfo.getString("logs_channel_id"));
+            channel.sendMessage("@everyone").queue();
+            channel.sendMessageEmbeds(new EmbedBuilder()
+                .setTitle("User "
+                    + nullSafe(event.getMember().getEffectiveName())
+                    + "#"
+                    + event.getAuthor().getDiscriminator()
+                    + " (ID: "
+                    + event.getAuthor().getId() + ")"
+                    ).addField("Message", message, false)
+                    .build()).queue();
         }
+    }
+
+    public void sendHelp(TextChannel channel, String prefix){
+        channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
+                .addField(prefix + "prefix <new_prefix>", "Sets up new prefix for me", false)
+                .addField(prefix + "setUpdatesChannel #channel", "Sets channel for my updates", false)
+                .addField(prefix + "setLogsChannel #channel", "Sets channel where logs will appear (possible scam message etc.)", false)
+                .build()).queue();
     }
 
     @Override
     public void onGuildJoin(@NotNull GuildJoinEvent event) {
         ArrayList<Permission> permissions = new ArrayList<>();
         permissions.add(Permission.VIEW_CHANNEL);
-        if(event.getGuild().getTextChannelsByName("logs", true).isEmpty()){
-            event.getGuild().createCategory("scammers").queue(category -> {
-                category.createTextChannel("logs")
-                        .addPermissionOverride(event.getGuild().getPublicRole(), new ArrayList<>(), permissions)
-                        .addMemberPermissionOverride(AntiScam.jda.getSelfUser().getIdLong(), permissions, new ArrayList<>())
-                        .queue(channel -> channel.sendMessage("**Do not rename these channels and categories!**").queue());
-            });
-        }
-        AntiScam.jda.getPresence().setPresence(Activity.watching(AntiScam.jda.getGuilds().size() + " servers"), true);
+        setupServer(event.getGuild());
+        updatePresence();
     }
 
     @Override
     public void onGuildLeave(@NotNull GuildLeaveEvent event) {
-        AntiScam.jda.getPresence().setPresence(Activity.watching(AntiScam.jda.getGuilds().size() + " servers"), true);
+        collection.deleteOne(new Document("server_id", event.getGuild().getId()));
+        updatePresence();
     }
 
     @Override
     public void onGuildBan(@NotNull GuildBanEvent event) {
-        AntiScam.jda.getPresence().setPresence(Activity.watching(AntiScam.jda.getGuilds().size() + " servers"), true);
+        updatePresence();
     }
 
-    @SuppressWarnings("all")
+    public void updatePresence(){
+        AntiScam.jda.getPresence().setPresence(Activity.watching("a!help | " + AntiScam.jda.getGuilds().size() + " servers"), true);
+    }
+
+
     public String nullSafe(@Nullable String string){
         if(string == null){
             return "null";
