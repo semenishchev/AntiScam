@@ -1,7 +1,7 @@
 package me.mrfunny.bots.antiscam;
 
 public class Occurrence {
-    private long lastOccurrence = System.currentTimeMillis();
+    private long lastOccurrence = 0;
     private final String id;
 
     public Occurrence(String id) {
