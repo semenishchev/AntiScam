@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.events.guild.GuildBanEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.internal.JDAImpl;
 import org.bson.Document;
@@ -22,6 +23,8 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import static net.dv8tion.jda.api.requests.ErrorResponse.CANNOT_SEND_TO_USER;
 
 public class Listener extends ListenerAdapter {
 
@@ -43,14 +46,28 @@ public class Listener extends ListenerAdapter {
     private void setupServer(Guild guild){
         ArrayList<Permission> permissions = new ArrayList<>();
         permissions.add(Permission.VIEW_CHANNEL);
-        Category category = guild.createCategory("AntiScam").addRolePermissionOverride(guild.getPublicRole().getIdLong(), new ArrayList<>(), permissions).complete();
-        List<TextChannel> possibleUpdatesChannels = guild.getTextChannelsByName("antiscam-updates", true);
-        List<TextChannel> possibleLogsChannels = guild.getTextChannelsByName("logs", true);
-        TextChannel updatesChannel = (possibleUpdatesChannels.isEmpty() ? category.createTextChannel("antiscam-updates").addRolePermissionOverride(guild.getPublicRole().getIdLong(), new ArrayList<>(), permissions).complete() : possibleUpdatesChannels.get(0));
-        TextChannel logsChannel = (possibleLogsChannels.isEmpty() ? category.createTextChannel("logs").addRolePermissionOverride(guild.getPublicRole().getIdLong(), new ArrayList<>(), permissions).complete() : possibleLogsChannels.get(0));
-        logsChannel.sendMessage("Thanks for adding me! My current prefix is a!").queue(message -> sendHelp(logsChannel, "a!"));
-        if(collection.find(new Document("server_id", guild.getId())).first() == null){
-            collection.insertOne(new Document("server_id", guild.getId()).append("logs_channel_id", logsChannel.getId()).append("prefix", "a!").append("updates_channel_id", updatesChannel.getId()));
+        try {
+            Category category = guild.createCategory("AntiScam").addRolePermissionOverride(guild.getPublicRole().getIdLong(), new ArrayList<>(), permissions).complete();
+            List<TextChannel> possibleUpdatesChannels = guild.getTextChannelsByName("antiscam-updates", true);
+            List<TextChannel> possibleLogsChannels = guild.getTextChannelsByName("logs", true);
+            TextChannel updatesChannel = (possibleUpdatesChannels.isEmpty() ? category.createTextChannel("antiscam-updates").addMemberPermissionOverride(AntiScam.jda.getSelfUser().getIdLong(), permissions, new ArrayList<>()).addRolePermissionOverride(guild.getPublicRole().getIdLong(), new ArrayList<>(), permissions).complete() : possibleUpdatesChannels.get(0));
+            TextChannel logsChannel = (possibleLogsChannels.isEmpty() ? category.createTextChannel("logs").addMemberPermissionOverride(AntiScam.jda.getSelfUser().getIdLong(), permissions, new ArrayList<>()).addRolePermissionOverride(guild.getPublicRole().getIdLong(), new ArrayList<>(), permissions).complete() : possibleLogsChannels.get(0));
+            logsChannel.sendMessage("Thanks for adding me! My current prefix is a!").queue(message -> sendHelp(logsChannel, "a!"));
+            if(collection.find(new Document("server_id", guild.getId())).first() == null){
+                collection.insertOne(new Document("server_id", guild.getId()).append("logs_channel_id", logsChannel.getId()).append("prefix", "a!").append("updates_channel_id", updatesChannel.getId()));
+            }
+        } catch (Exception exception){
+            try {
+                for(TextChannel channel: guild.getTextChannels()){
+                    if(channel.canTalk()){
+                        channel.sendMessage("Please give me " + "Manage Channels, Read Messages, Send Messages, Manage Messages and" +
+                                " Include links permissions").queue();
+                    }
+                }
+            } catch (InsufficientPermissionException exception1){
+                guild.leave().queue();
+            }
+
         }
 
     }
@@ -240,8 +257,6 @@ public class Listener extends ListenerAdapter {
 
     @Override
     public void onGuildJoin(@NotNull GuildJoinEvent event) {
-        ArrayList<Permission> permissions = new ArrayList<>();
-        permissions.add(Permission.VIEW_CHANNEL);
         setupServer(event.getGuild());
         updatePresence();
     }
