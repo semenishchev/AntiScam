@@ -155,7 +155,9 @@ public class Listener extends ListenerAdapter {
                     if(serverInfo != null){
                         AntiScam.jda.getGuildById(messageData[1]).getTextChannelById(serverInfo.getString("updates_channel_id")).sendMessageEmbeds(
                                 new EmbedBuilder().setColor(Color.GREEN).setTitle("Your report has been viewed!")
-                                        .addField("Comment of developer", String.join(" ", ArrayUtils.removeAll(messageData, 0, 1)), false).build()
+                                        .addField("Comment of developer", String.join(" ", ArrayUtils.removeAll(messageData, 0, 1)), false)
+                                        .setFooter(event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator(), event.getAuthor().getEffectiveAvatarUrl())
+                                        .build()
                         ).queue();
                     } else {
                         sendFeedback("Server not found", FeedbackType.ERROR, event.getChannel());
