@@ -74,12 +74,7 @@ public class Listener extends ListenerAdapter {
             }
         } catch (Exception exception){
             try {
-                for(TextChannel channel: guild.getTextChannels()){
-                    if(channel.canTalk()){
-                        channel.sendMessage("Please give me " + "Manage Channels, Read Messages, Send Messages, Manage Messages and" +
-                                " Include links permissions").queue();
-                    }
-                }
+                exception.printStackTrace();
             } catch (InsufficientPermissionException exception1){
                 guild.leave().queue();
             }
