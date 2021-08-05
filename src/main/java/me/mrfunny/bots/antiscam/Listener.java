@@ -21,7 +21,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.util.*;
-import java.util.List;
 
 public class Listener extends ListenerAdapter {
     private final WebhookClient client;
@@ -254,10 +253,9 @@ public class Listener extends ListenerAdapter {
                     vl = 10;
                 } else if(word.contains("nitro") && !word.startsWith("https://discord.gift")){
                     vl = 10;
-                } else if(word.contains("stea") && (!word.startsWith("https://steamcommunity.com/") || !word.startsWith("https://store.steampowered.com/"))){
+                } else if(word.contains("stea") && !word.startsWith("https://steamcommunity.com/") && !word.startsWith("https://store.steampowered.com/")){
                     vl = 10;
                 }
-                System.out.println((!word.startsWith("https://steamcommunity.com/") || !word.startsWith("https://store.steampowered.com/")));
             }
         }
         if(vl > 3){
