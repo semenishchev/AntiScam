@@ -189,8 +189,9 @@ public class Listener extends ListenerAdapter {
                     }
                     if(serverInfo != null){
                         AntiScam.jda.getGuildById(messageData[1]).getTextChannelById(serverInfo.getString("updates_channel_id")).sendMessageEmbeds(
-                                new EmbedBuilder().setColor(hexToColor("#FF4136")).setTitle("Your server has been banned for posting tickets! Now you can't post tickets.")
-                                        .addField("Comment of developer", reason, false)
+                                new EmbedBuilder().setColor(hexToColor("#FF4136")).setTitle("Your server has been banned from posting errors! Now you can't post errors via " + serverInfo.getString("prefix") + "error")
+                                        .addField("Reason", reason, false)
+                                        .addField("We are wrong?", "Contact developer (contacts in footer)", false)
                                         .setFooter(event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator(), event.getAuthor().getEffectiveAvatarUrl())
                                         .build()
                         ).queue();
