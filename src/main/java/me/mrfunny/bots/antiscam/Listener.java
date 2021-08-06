@@ -4,6 +4,7 @@ import club.minnced.discord.webhook.WebhookClient;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
@@ -32,12 +33,15 @@ public class Listener extends ListenerAdapter {
 
     private final String[] blacklistedWords = {"сначал", "эпик", "стим", "нитро", "ненадеж", "ненадёж", "разда", "нитру", "скин", "успел", "everyone"};
     private MongoCollection<Document> collection;
+    private MongoCollection<Document> blockedServers;
 
     @Override
     public void onReady(@NotNull ReadyEvent event) {
         updatePresence();
         MongoClient client = MongoClients.create(SuperSecretClass.connectionString);
-        collection = client.getDatabase("antiscam").getCollection("servers");
+        MongoDatabase database = client.getDatabase("antiscam");
+        collection = database.getCollection("servers");
+        blockedServers = database.getCollection("blocked_servers");
         for(Guild guild : AntiScam.jda.getGuilds()){
             if(collection.find(new Document("server_id", guild.getId())).first() == null){
                 setupServer(guild);
@@ -163,7 +167,7 @@ public class Listener extends ListenerAdapter {
                     Document serverInfo = collection.find(new Document("server_id", messageData[1])).first();
                     if(serverInfo != null){
                         AntiScam.jda.getGuildById(messageData[1]).getTextChannelById(serverInfo.getString("updates_channel_id")).sendMessageEmbeds(
-                                new EmbedBuilder().setColor(Color.GREEN).setTitle("Your report has been viewed!")
+                                new EmbedBuilder().setColor(hexToColor("#2ECC40")).setTitle("Your report has been viewed!")
                                         .addField("Comment of developer", String.join(" ", ArrayUtils.removeAll(messageData, 0, 1)), false)
                                         .setFooter(event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator(), event.getAuthor().getEffectiveAvatarUrl())
                                         .build()
@@ -175,6 +179,26 @@ public class Listener extends ListenerAdapter {
                     sendFeedback(exception.toString(), FeedbackType.ERROR, event.getChannel());
                 }
 
+            } else if(message.startsWith("!banServer")){
+                try {
+                    String[] messageData = message.replace("!updateState", "").split(" ");
+                    Document serverInfo = collection.find(new Document("server_id", messageData[1])).first();
+                    String reason = String.join(" ", ArrayUtils.removeAll(messageData, 0, 1));
+                    if(reason.trim().equals("")){
+                        reason = "unspecified";
+                    }
+                    if(serverInfo != null){
+                        AntiScam.jda.getGuildById(messageData[1]).getTextChannelById(serverInfo.getString("updates_channel_id")).sendMessageEmbeds(
+                                new EmbedBuilder().setColor(hexToColor("#FF4136")).setTitle("Your server has been banned for posting tickets! Now you can't post tickets.")
+                                        .addField("Comment of developer", reason, false)
+                                        .setFooter(event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator(), event.getAuthor().getEffectiveAvatarUrl())
+                                        .build()
+                        ).queue();
+                    }
+                    blockedServers.insertOne(new Document("server_id", messageData[1]).append("reason", reason));
+                } catch (Exception exception){
+                    sendFeedback(exception.toString(), FeedbackType.ERROR, event.getChannel());
+                }
             }
         }
 
@@ -227,6 +251,10 @@ public class Listener extends ListenerAdapter {
                         sendHelp(event.getChannel(), prefix);
                         break;
                     case "error":
+                        Document possibleBan = blockedServers.find(new Document("server_id", event.getGuild().getId())).first();
+                        if(possibleBan != null){
+                            sendFeedback("Your are banned from posting errors. Reason: " + possibleBan.getString("reason"), FeedbackType.ERROR, event.getChannel());
+                        }
                         client.send("Guild ID: (" + event.getGuild().getId() + ") " + String.join(" ", ArrayUtils.remove(command, 0)));
                         sendFeedback("Your message has been sent. We will fix your issue as soon as possible", FeedbackType.OK, event.getChannel());
                         break;
