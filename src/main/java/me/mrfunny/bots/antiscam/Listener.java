@@ -290,10 +290,8 @@ public class Listener extends ListenerAdapter {
                 channel.sendMessage("@everyone").queue();
             }
             channel.sendMessageEmbeds(new EmbedBuilder()
-                    .setTitle("User "
-                            + nullSafe(author.getName())
-                            + "#"
-                            + author.getDiscriminator()
+                    .setTitle("User " +
+                            author.getAsMention()
                             + " (ID: "
                             + author.getId() + ")"
                     ).addField("Message" + (edited ? " (edited message)" : ""), message, false)
