@@ -289,9 +289,12 @@ public class Listener extends ListenerAdapter {
             if((System.currentTimeMillis() - occurrence.getLastOccurrence()) >= 600000){
                 channel.sendMessage("@everyone").queue();
             }
+            channel.sendMessage("User " + author.getAsMention() + " sent scam message!").queue();
             channel.sendMessageEmbeds(new EmbedBuilder()
-                    .setTitle("User " +
-                            author.getAsMention()
+                    .setTitle("User "
+                            + nullSafe(author.getName())
+                            + "#"
+                            + author.getDiscriminator()
                             + " (ID: "
                             + author.getId() + ")"
                     ).addField("Message" + (edited ? " (edited message)" : ""), message, false)
