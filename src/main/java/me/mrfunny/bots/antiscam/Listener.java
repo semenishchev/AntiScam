@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.events.guild.GuildBanEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageUpdateEvent;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.commons.lang3.ArrayUtils;
@@ -240,6 +241,21 @@ public class Listener extends ListenerAdapter {
             sendHelp(event.getChannel(), prefix);
         }
 
+
+        checkMessage(event.getMessage(), event.getAuthor(), event.getGuild(), serverInfo, false);
+    }
+
+    public void sendHelp(TextChannel channel, String prefix){
+        channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
+                .addField(prefix + "prefix <new_prefix>", "Sets up new prefix for me", false)
+                .addField(prefix + "setUpdatesChannel #channel", "Sets channel for my updates", false)
+                .addField(prefix + "setLogsChannel #channel", "Sets channel where logs will appear (possible scam message etc.)", false)
+                .addField(prefix + "error <your message>", "If you get some error, or bot does not delete scam messages or vice versa deletes normal messages", false)
+                .build()).queue();
+    }
+
+    public void checkMessage(Message messageObject, User author, Guild guild, Document serverInfo, boolean edited){
+        String message = messageObject.getContentRaw();
         int vl = 0;
         for(String word : blacklistedWords){
             if(message.contains(word)){
@@ -259,39 +275,30 @@ public class Listener extends ListenerAdapter {
             }
         }
         if(vl > 3){
-            event.getMessage().delete().queue();
-            if(occurrences.containsKey(event.getAuthor().getId())){
-                Occurrence occurrence = occurrences.get(event.getAuthor().getId());
+            messageObject.delete().queue();
+            if(occurrences.containsKey(author.getId())){
+                Occurrence occurrence = occurrences.get(author.getId());
                 occurrence.addOccurrence();
             } else {
-                Occurrence occurrence = new Occurrence(event.getAuthor().getId());
-                occurrences.put(event.getAuthor().getId(), occurrence);
+                Occurrence occurrence = new Occurrence(author.getId());
+                occurrences.put(author.getId(), occurrence);
             }
-            event.getGuild().getTextChannelById(serverInfo.getString("logs_channel_id"));
-            TextChannel channel = event.getGuild().getTextChannelById(serverInfo.getString("logs_channel_id"));
-            Occurrence occurrence = occurrences.get(event.getAuthor().getId());
+            guild.getTextChannelById(serverInfo.getString("logs_channel_id"));
+            TextChannel channel = guild.getTextChannelById(serverInfo.getString("logs_channel_id"));
+            Occurrence occurrence = occurrences.get(author.getId());
             if((System.currentTimeMillis() - occurrence.getLastOccurrence()) >= 600000){
                 channel.sendMessage("@everyone").queue();
             }
             channel.sendMessageEmbeds(new EmbedBuilder()
-                .setTitle("User "
-                    + nullSafe(event.getMember().getEffectiveName())
-                    + "#"
-                    + event.getAuthor().getDiscriminator()
-                    + " (ID: "
-                    + event.getAuthor().getId() + ")"
-                    ).addField("Message", message, false)
+                    .setTitle("User "
+                            + nullSafe(author.getName())
+                            + "#"
+                            + author.getDiscriminator()
+                            + " (ID: "
+                            + author.getId() + ")"
+                    ).addField("Message" + (edited ? " (edited message)" : ""), message, false)
                     .build()).queue();
         }
-    }
-
-    public void sendHelp(TextChannel channel, String prefix){
-        channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
-                .addField(prefix + "prefix <new_prefix>", "Sets up new prefix for me", false)
-                .addField(prefix + "setUpdatesChannel #channel", "Sets channel for my updates", false)
-                .addField(prefix + "setLogsChannel #channel", "Sets channel where logs will appear (possible scam message etc.)", false)
-                .addField(prefix + "error <your message>", "If you get some error, or bot does not delete scam messages or vice versa deletes normal messages", false)
-                .build()).queue();
     }
 
     @Override
@@ -313,6 +320,13 @@ public class Listener extends ListenerAdapter {
 
     public void updatePresence(){
         AntiScam.jda.getPresence().setPresence(Activity.watching("a!help | " + AntiScam.jda.getGuilds().size() + " servers"), true);
+    }
+
+    @Override
+    public void onGuildMessageUpdate(@NotNull GuildMessageUpdateEvent event) {
+        String guildId = event.getGuild().getId();
+        Document serverInfo = collection.find(new Document("server_id", guildId)).first();
+        checkMessage(event.getMessage(), event.getAuthor(), event.getGuild(), serverInfo, true);
     }
 
     public String nullSafe(@Nullable String string){
