@@ -256,8 +256,8 @@ public class Listener extends ListenerAdapter {
                             sendFeedback("Your are banned from posting errors. Reason: " + possibleBan.getString("reason"), FeedbackType.ERROR, event.getChannel());
                         } else {
                             client.send("Guild ID: (" + event.getGuild().getId() + ") " + String.join(" ", ArrayUtils.remove(command, 0)));
+                            sendFeedback("Your message has been sent. We will fix your issue as soon as possible", FeedbackType.OK, event.getChannel());
                         }
-                        sendFeedback("Your message has been sent. We will fix your issue as soon as possible", FeedbackType.OK, event.getChannel());
                         break;
                 }
             } else {
