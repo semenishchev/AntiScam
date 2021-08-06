@@ -25,12 +25,12 @@ import java.awt.*;
 import java.util.*;
 
 public class Listener extends ListenerAdapter {
+
     private final WebhookClient client;
     public Listener(String webhookUrl){
         client = WebhookClient.withUrl(webhookUrl);
     }
     private final HashMap<String, Occurrence> occurrences = new HashMap<>();
-
     private final String[] blacklistedWords = {"сначал", "эпик", "стим", "нитро", "ненадеж", "ненадёж", "разда", "нитру", "скин", "успел", "everyone"};
     private MongoCollection<Document> collection;
     private MongoCollection<Document> blockedServers;
@@ -47,10 +47,8 @@ public class Listener extends ListenerAdapter {
                 setupServer(guild);
             }
         }
-
         Timer t = new Timer();
         t.scheduleAtFixedRate(new TimerTask() {
-
             @Override
             public void run() {
                 for(Occurrence occurrence : occurrences.values()){
@@ -58,9 +56,8 @@ public class Listener extends ListenerAdapter {
                         occurrences.remove(occurrence.getId());
                     }
                 }
-
             }
-        }, 1000,60000);
+        }, 1000, 60000);
     }
 
     private void setupServer(Guild guild){
@@ -136,6 +133,7 @@ public class Listener extends ListenerAdapter {
                 builder.setTitle("New Update! v" + AntiScam.version);
                 builder.setFooter(event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator(), event.getAuthor().getEffectiveAvatarUrl());
                 builder.setColor(hexToColor("#0074D9"));
+
                 for(String line : updateMessage.split("\n")){
                     String[] lineData = line.split("=");
 
@@ -204,12 +202,11 @@ public class Listener extends ListenerAdapter {
         }
 
         String guildId = event.getGuild().getId();
-
         Document serverInfo = collection.find(new Document("server_id", guildId)).first();
-
         if(serverInfo == null){
             setupServer(event.getGuild());
         }
+
         if(event.getAuthor().isBot() || event.getAuthor().isSystem()) return;
         String prefix = serverInfo != null ? serverInfo.getString("prefix") : "a!";
         if(message.startsWith(prefix)){
@@ -271,7 +268,6 @@ public class Listener extends ListenerAdapter {
             sendHelp(event.getChannel(), prefix);
         }
 
-
         checkMessage(event.getMessage(), event.getAuthor(), event.getGuild(), serverInfo, false);
     }
 
@@ -286,12 +282,14 @@ public class Listener extends ListenerAdapter {
 
     public void checkMessage(Message messageObject, User author, Guild guild, Document serverInfo, boolean edited){
         String message = messageObject.getContentRaw();
+
         int vl = 0;
         for(String word : blacklistedWords){
             if(message.contains(word)){
                 vl++;
             }
         }
+
         for(String line : message.split("\n")){
             for(String word : line.split(" ")){
                 if(!word.startsWith("http")) continue;
@@ -304,6 +302,7 @@ public class Listener extends ListenerAdapter {
                 }
             }
         }
+
         if(vl > 3){
             messageObject.delete().queue();
             if(occurrences.containsKey(author.getId())){
