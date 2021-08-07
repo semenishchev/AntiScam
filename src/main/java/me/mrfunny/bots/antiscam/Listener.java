@@ -94,7 +94,6 @@ public class Listener extends ListenerAdapter {
         StringBuilder sb = new StringBuilder();
         Color color = Color.DARK_GRAY;
         switch (feedbackType){
-
             case ERROR:
                 sb.append("Error: ");
                 color = hexToColor("#FF4136");
@@ -315,9 +314,9 @@ public class Listener extends ListenerAdapter {
             guild.getTextChannelById(serverInfo.getString("logs_channel_id"));
             TextChannel channel = guild.getTextChannelById(serverInfo.getString("logs_channel_id"));
             Occurrence occurrence = occurrences.get(author.getId());
-            if((System.currentTimeMillis() - occurrence.getLastOccurrence()) >= 600000){
-                channel.sendMessage("@everyone").queue();
-            }
+//            if((System.currentTimeMillis() - occurrence.getLastOccurrence()) >= 600000){
+//                channel.sendMessage("@everyone").queue();
+//            }
             channel.sendMessage("User " + author.getAsMention() + " sent scam message!").queue();
             channel.sendMessageEmbeds(new EmbedBuilder()
                     .setTitle("User "
