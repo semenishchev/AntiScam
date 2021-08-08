@@ -35,7 +35,7 @@ public class Listener extends ListenerAdapter {
     private final String[] blacklistedWords = {"сначал", "эпик", "стим", "нитро", "ненадеж", "ненадёж", "разда", "нитру", "скин", "успел", "everyone"};
     private MongoCollection<Document> collection;
     private MongoCollection<Document> blockedServers;
-    private final String[] mostOfScamLinks = {"discord.com", "steamcommunity.com", "discord.gift", "store.steampowered.com"};
+    private final String[] mostOfScamLinks = {"discord.com", "discord.gg", "steamcommunity.com", "discord.gift", "store.steampowered.com"};
 
     @Override
     public void onReady(@NotNull ReadyEvent event) {
@@ -302,6 +302,9 @@ public class Listener extends ListenerAdapter {
                         String[] wordData = word.replace("https://", "").split("/");
                         for(String possibleScamLink : mostOfScamLinks){
                             double score = CheckService.check(possibleScamLink, wordData[0]);
+                            if(score == 1.0){
+                                continue;
+                            }
                             if(score > 0.45 && score != 1.0){
                                 vl = 10;
                                 aiScores.add(score);
