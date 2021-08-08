@@ -304,6 +304,8 @@ public class Listener extends ListenerAdapter {
                             double score = CheckService.check(possibleScamLink, wordData[0]);
                             //System.out.println(wordData[0] + " " + score);
                             if (score == 1.0) {
+                                aiScores.clear();
+                                aiScores.add(1.0);
                                 break;
                             }
                             if (score > 0.45 && score != 1.0) {
