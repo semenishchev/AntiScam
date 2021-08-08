@@ -338,7 +338,8 @@ public class Listener extends ListenerAdapter {
             }
         }
 
-        if(vl > 3){
+        double avg = average(aiScores);
+        if(vl > 3 && (avg != 1.0 || aiScores.isEmpty())){
             messageObject.delete().queue();
             if(occurrences.containsKey(author.getId())){
                 Occurrence occurrence = occurrences.get(author.getId());
@@ -362,7 +363,7 @@ public class Listener extends ListenerAdapter {
                             + " (ID: "
                             + author.getId() + ")"
                     ).addField("Message" + (edited ? " (edited message)" : ""), message, false)
-                    .addField("AI", "Score: " + middle(aiScores), false)
+                    .addField("AI", "Score: " + average(aiScores), false)
                     .setFooter("From 0.45 to 0.99 is possibly a scam. If not, report this via " + serverInfo.getString("prefix") + "error falsePositive <message> <score>")
                     .build()).queue();
         } else if(vl == -1){
@@ -376,11 +377,12 @@ public class Listener extends ListenerAdapter {
         updatePresence();
     }
 
-    private double middle(ArrayList<Double> doubles){
+    private double average(ArrayList<Double> doubles){
         double preFinal = 0;
         for(double double_ : doubles){
             preFinal += double_;
         }
+        if(doubles.size() == 0) return 0;
         return preFinal / (double) doubles.size();
     }
 
