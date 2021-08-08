@@ -295,7 +295,7 @@ public class Listener extends ListenerAdapter {
             for(String word : line.split(" ")){
                 if(word.contains(".")){
                     if(word.contains("/")){
-                        if(word.startsWith("http")){
+                        if(word.startsWith("http:")){
                             vl = -1;
                             break;
                         }
