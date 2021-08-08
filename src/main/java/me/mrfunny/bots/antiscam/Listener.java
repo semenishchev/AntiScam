@@ -5,6 +5,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import me.mrfunny.bots.antiscam.ai.CheckService;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
@@ -34,6 +35,7 @@ public class Listener extends ListenerAdapter {
     private final String[] blacklistedWords = {"сначал", "эпик", "стим", "нитро", "ненадеж", "ненадёж", "разда", "нитру", "скин", "успел", "everyone"};
     private MongoCollection<Document> collection;
     private MongoCollection<Document> blockedServers;
+    private final String[] mostOfScamLinks = {"discord.com", "steamcommunity.com/", "discord.gift"};
 
     @Override
     public void onReady(@NotNull ReadyEvent event) {
@@ -288,9 +290,31 @@ public class Listener extends ListenerAdapter {
                 vl++;
             }
         }
-
+        ArrayList<Double> aiScores = new ArrayList<>();
         for(String line : message.split("\n")){
             for(String word : line.split(" ")){
+                if(word.contains(".")){
+                    if(word.contains("/")){
+                        String[] wordData = word.split("/");
+                        double score = CheckService.check("discord.com", wordData[0]);
+                        if(score > 0.45 && score != 1.0){
+                            vl = 10;
+                            aiScores.add(score);
+                        }
+                    } else {
+                        for(String possibleScamLink : mostOfScamLinks){
+                            double score = CheckService.check(possibleScamLink, word);
+                            if(score > 0.45 && score != 1.0){
+                                vl = 10;
+                                aiScores.add(score);
+                            }
+                        }
+                    }
+                }
+                if(word.startsWith("http:")){
+                    vl = -1;
+                    break;
+                }
                 if(!word.startsWith("http")) continue;
                 if(word.contains("tradeOffer") && !word.startsWith("https://steamcommunity.com")){
                     vl = 10;
@@ -326,7 +350,11 @@ public class Listener extends ListenerAdapter {
                             + " (ID: "
                             + author.getId() + ")"
                     ).addField("Message" + (edited ? " (edited message)" : ""), message, false)
+                    .addField("AI", "Score: " + middle(aiScores), false)
+                    .setFooter("From 0.45 to 0.99 is possibly a scam. If not, report this via " + serverInfo.getString("prefix") + "error falsePositive <message> <score>")
                     .build()).queue();
+        } else if(vl == -1){
+            messageObject.delete().queue();
         }
     }
 
@@ -334,6 +362,14 @@ public class Listener extends ListenerAdapter {
     public void onGuildJoin(@NotNull GuildJoinEvent event) {
         setupServer(event.getGuild());
         updatePresence();
+    }
+
+    private double middle(ArrayList<Double> doubles){
+        double preFinal = 0;
+        for(double double_ : doubles){
+            preFinal += double_;
+        }
+        return preFinal / (double) doubles.size();
     }
 
     @Override
