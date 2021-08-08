@@ -300,6 +300,7 @@ public class Listener extends ListenerAdapter {
                             break;
                         }
                         String[] wordData = word.replace("https://", "").split("/");
+                        System.out.println(wordData[0]);
                         double score = CheckService.check("discord.com", wordData[0]);
                         if(score > 0.45 && score != 1.0){
                             vl = 10;
