@@ -295,7 +295,11 @@ public class Listener extends ListenerAdapter {
             for(String word : line.split(" ")){
                 if(word.contains(".")){
                     if(word.contains("/")){
-                        String[] wordData = word.split("/");
+                        if(word.startsWith("http")){
+                            vl = -1;
+                            break;
+                        }
+                        String[] wordData = word.replace("https://", "").split("/");
                         double score = CheckService.check("discord.com", wordData[0]);
                         if(score > 0.45 && score != 1.0){
                             vl = 10;
