@@ -300,10 +300,12 @@ public class Listener extends ListenerAdapter {
                             break;
                         }
                         String[] wordData = word.replace("https://", "").split("/");
-                        double score = CheckService.check("discord.com", wordData[0]);
-                        if(score > 0.45 && score != 1.0){
-                            vl = 10;
-                            aiScores.add(score);
+                        for(String possibleScamLink : mostOfScamLinks){
+                            double score = CheckService.check(possibleScamLink, wordData[0]);
+                            if(score > 0.45 && score != 1.0){
+                                vl = 10;
+                                aiScores.add(score);
+                            }
                         }
                     } else {
                         for(String possibleScamLink : mostOfScamLinks){
