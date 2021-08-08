@@ -35,7 +35,7 @@ public class Listener extends ListenerAdapter {
     private final String[] blacklistedWords = {"сначал", "эпик", "стим", "нитро", "ненадеж", "ненадёж", "разда", "нитру", "скин", "успел", "everyone"};
     private MongoCollection<Document> collection;
     private MongoCollection<Document> blockedServers;
-    private final String[] mostOfScamLinks = {"discord.com", "steamcommunity.com/", "discord.gift"};
+    private final String[] mostOfScamLinks = {"discord.com", "steamcommunity.com", "discord.gift", "store.steampowered.com"};
 
     @Override
     public void onReady(@NotNull ReadyEvent event) {
@@ -264,7 +264,7 @@ public class Listener extends ListenerAdapter {
             }
         }
 
-        if(message.equals("<@!" + AntiScam.jda.getSelfUser().getId() + ">")){
+        if(message.equals("<@!" + AntiScam.jda.getSelfUser().getId() + ">") || message.equals("@" + event.getGuild().getSelfMember().getEffectiveName() + "#" + AntiScam.jda.getSelfUser().getDiscriminator())){
             event.getChannel().sendMessage("My current prefix is " + prefix).queue();
             sendHelp(event.getChannel(), prefix);
         }
