@@ -302,6 +302,7 @@ public class Listener extends ListenerAdapter {
                         String[] wordData = word.replace("https://", "").split("/");
                         for(String possibleScamLink : mostOfScamLinks){
                             double score = CheckService.check(possibleScamLink, wordData[0]);
+                            System.out.println(wordData[0] + " " + score);
                             if(score == 1.0){
                                 continue;
                             }
