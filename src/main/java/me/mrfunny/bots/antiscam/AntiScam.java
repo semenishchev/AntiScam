@@ -10,7 +10,6 @@ public class AntiScam {
     public static String version = "2.0";
 
     public static void main(String[] args) throws LoginException {
-        System.out.println(System.getenv().get("token"));
         jda = JDABuilder.createDefault(SuperSecretClass.token).addEventListeners(new Listener(SuperSecretClass.webhookUrl)).build();
     }
 }
