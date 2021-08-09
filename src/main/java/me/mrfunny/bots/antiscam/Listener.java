@@ -35,7 +35,7 @@ public class Listener extends ListenerAdapter {
     private final String[] blacklistedWords = {"сначал", "эпик", "стим", "нитро", "ненадеж", "ненадёж", "разда", "нитру", "скин", "успел", "everyone"};
     private MongoCollection<Document> collection;
     private MongoCollection<Document> blockedServers;
-    private final String[] mostOfScamLinks = {"discord.com", "discord.gg", "steamcommunity.com", "discord.gift", "store.steampowered.com"};
+    private final String[] mostOfScamLinks = {"discord.com", "discord.gg", "steamcommunity.com", "discord.gift", "store.steampowered.com", "tenor.com"};
 
     @Override
     public void onReady(@NotNull ReadyEvent event) {
@@ -73,14 +73,7 @@ public class Listener extends ListenerAdapter {
             if(collection.find(new Document("server_id", guild.getId())).first() == null){
                 collection.insertOne(new Document("server_id", guild.getId()).append("logs_channel_id", logsChannel.getId()).append("prefix", "a!").append("updates_channel_id", updatesChannel.getId()));
             }
-        } catch (Exception exception){
-            try {
-                System.out.println(guild.getName());
-                exception.printStackTrace();
-            } catch (InsufficientPermissionException exception1){
-                guild.leave().queue();
-            }
-
+        } catch (InsufficientPermissionException ignored){
         }
 
     }
