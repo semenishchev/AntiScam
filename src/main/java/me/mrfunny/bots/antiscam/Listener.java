@@ -292,7 +292,7 @@ public class Listener extends ListenerAdapter {
                             vl = -1;
                             break;
                         }
-                        String[] wordData = word.replace("https://", "").split("/");
+                        String[] wordData = word.replace("https://", "").replaceFirst("www\\.", "").split("/");
                         for (String possibleScamLink : mostOfScamLinks) {
                             double score = CheckService.check(possibleScamLink, wordData[0]);
                             //System.out.println(wordData[0] + " " + score);
