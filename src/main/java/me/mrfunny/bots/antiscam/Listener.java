@@ -36,7 +36,8 @@ public class Listener extends ListenerAdapter {
     private MongoCollection<Document> collection;
     private MongoCollection<Document> blockedServers;
     private final String[] mostOfScamLinks = {"discord.com", "youtube.com", "youtu.be", "discord.gg", "steamcommunity.com", "discord.gift", "store.steampowered.com", "tenor.com", "discordapp.net", "media.discordapp.net", "vk.com", "imgur.com"};
-
+    private final String[] mostOfScamLinks = {"discord", "youtube", "discord", "steamcommunity", "store.steampowered", "discordapp"};
+    
     @Override
     public void onReady(@NotNull ReadyEvent event) {
         updatePresence();
@@ -293,6 +294,8 @@ public class Listener extends ListenerAdapter {
                             break;
                         }
                         String[] wordData = word.replace("https://", "").replaceFirst("www\\.", "").split("/");
+                        String[] domainData = wordData.split(".");
+                        String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1));
                         for (String possibleScamLink : mostOfScamLinks) {
                             double score = CheckService.check(possibleScamLink, wordData[0]);
                             
@@ -364,6 +367,16 @@ public class Listener extends ListenerAdapter {
             messageObject.delete().queue();
         }
     }
+    
+    private String joinFromIndex(String[] array, int index){
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < array.length; i++){
+            if(i >= index){
+                sb.append(array[i]);   
+            }
+        }
+        return sb.toString();
+     }
 
     @Override
     public void onGuildJoin(@NotNull GuildJoinEvent event) {
