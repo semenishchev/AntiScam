@@ -24,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.util.*;
-
+//TODO: .com checker, subdomain remover
 public class Listener extends ListenerAdapter {
 
     private final WebhookClient client;
@@ -35,7 +35,7 @@ public class Listener extends ListenerAdapter {
     private final String[] blacklistedWords = {"сначал", "эпик", "стим", "нитро", "ненадеж", "ненадёж", "разда", "нитру", "скин", "успел", "everyone"};
     private MongoCollection<Document> collection;
     private MongoCollection<Document> blockedServers;
-    private final String[] mostOfScamLinks = {"discord.com", "youtube.com", "youtu.be", "discord.gg", "steamcommunity.com", "discord.gift", "store.steampowered.com", "tenor.com", "discordapp.net", "media.discordapp.net"};
+    private final String[] mostOfScamLinks = {"discord.com", "youtube.com", "youtu.be", "discord.gg", "steamcommunity.com", "discord.gift", "store.steampowered.com", "tenor.com", "discordapp.net", "media.discordapp.net", "vk.com", "imgur.com"};
 
     @Override
     public void onReady(@NotNull ReadyEvent event) {
