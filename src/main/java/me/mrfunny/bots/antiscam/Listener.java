@@ -36,7 +36,7 @@ public class Listener extends ListenerAdapter {
     private MongoCollection<Document> collection;
     private MongoCollection<Document> blockedServers;
     private final String[] mostOfScamLinks = {"discord.com", "youtube.com", "youtu.be", "discord.gg", "steamcommunity.com", "discord.gift", "store.steampowered.com", "tenor.com", "discordapp.net", "media.discordapp.net", "vk.com", "imgur.com"};
-    private final String[] mostOfScamLinks = {"discord", "youtube", "discord", "steamcommunity", "store.steampowered", "discordapp"};
+    private final String[] mostOfScamLinksWithoutDomains = {"discord", "youtube", "discord", "steamcommunity", "store.steampowered", "discordapp"};
     
     @Override
     public void onReady(@NotNull ReadyEvent event) {
@@ -294,7 +294,7 @@ public class Listener extends ListenerAdapter {
                             break;
                         }
                         String[] wordData = word.replace("https://", "").replaceFirst("www\\.", "").split("/");
-                        String[] domainData = wordData.split(".");
+                        String[] domainData = wordData[0].split(".");
                         String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1) : wordData[0]);
                         for (String possibleScamLink : mostOfScamLinks) {
                             double score = CheckService.check(possibleScamLink, wordData[0]);
