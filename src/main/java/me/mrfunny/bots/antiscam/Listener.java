@@ -295,7 +295,7 @@ public class Listener extends ListenerAdapter {
                         }
                         String[] wordData = word.replace("https://", "").replaceFirst("www\\.", "").split("/");
                         String[] domainData = wordData.split(".");
-                        String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1));
+                        String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1) : wordData[0]);
                         for (String possibleScamLink : mostOfScamLinks) {
                             double score = CheckService.check(possibleScamLink, wordData[0]);
                             
