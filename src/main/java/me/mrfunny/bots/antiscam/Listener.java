@@ -267,7 +267,8 @@ public class Listener extends ListenerAdapter {
     }
 
     public void sendHelp(TextChannel channel, String prefix){
-        channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
+         System.out.println("call");    
+channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
                 .addField(prefix + "prefix <new_prefix>", "Sets up new prefix for me", false)
                 .addField(prefix + "setUpdatesChannel #channel", "Sets channel for my updates", false)
                 .addField(prefix + "setLogsChannel #channel", "Sets channel where logs will appear (possible scam message etc.)", false)
