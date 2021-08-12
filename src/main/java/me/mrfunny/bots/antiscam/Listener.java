@@ -307,7 +307,7 @@ channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
                                     if(possibleScamLink.equalsIgnoreCase(domain)) { break links;}
                                 }
                                 vl = 10;
-                            } else { vl = 10; }
+                            } else { if(score > 0.46) vl = 10; }
                              
                             
                        }
@@ -325,7 +325,7 @@ channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
                                     if(possibleScamLink.equalsIgnoreCase(domain)) { break links;}
                                 }
                                 vl = 10;
-                            } else { vl = 10; }
+                            } else { if(score > 0.46) vl = 10; }
                              
                             
                        }
