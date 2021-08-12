@@ -298,7 +298,7 @@ channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
                         String[] domainData = wordData[0].split(".");
                         String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1) : wordData[0]);
                         System.out.println(domain);
-double biggestScore = 0;
+                        double biggestScore = 0;
                         links: for(String link : mostOfScamLinksWithoutDomains) {
                             double score = CheckService.check(link, domain.split("\\.")[0]);
                             if(score > biggestScore) biggestScore = score;
@@ -313,13 +313,23 @@ double biggestScore = 0;
                        }
                        aiScores.add(biggestScore);
                     } else {
-                        for(String possibleScamLink : mostOfScamLinks){
-                            double score = CheckService.check(possibleScamLink, word);
-                            if(score > 0.45 && score != 1.0){
+                        String[] domainData = word.split(".");
+                        String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1) : wordData[0]);
+                        System.out.println(domain);
+                        double biggestScore = 0;
+                        links: for(String link : mostOfScamLinksWithoutDomains) {
+                            double score = CheckService.check(link, domain.split("\\.")[0]);
+                            if(score > biggestScore) biggestScore = score;
+                            if (score == 1.0) {
+                                for (String possibleScamLink : mostOfScamLinks) {
+                                    if(possibleScamLink.equalsIgnoreCase(domain)) { break links;}
+                                }
                                 vl = 10;
-                                aiScores.add(score);
-                            }
-                        }
+                            } else { vl = 10; }
+                             
+                            
+                       }
+                       aiScores.add(biggestScore);
                     }
                 }
                 if(word.startsWith("http:")){
@@ -338,7 +348,7 @@ double biggestScore = 0;
         }
 
         double avg = average(aiScores);
-        if(vl > 3 /*&& (avg != 1.0 || aiScores.isEmpty())*/){
+        if(vl > 3 && (avg != 1.0 || aiScores.isEmpty())){
             messageObject.delete().queue();
             if(occurrences.containsKey(author.getId())){
                 Occurrence occurrence = occurrences.get(author.getId());
