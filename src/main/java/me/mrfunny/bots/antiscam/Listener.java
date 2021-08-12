@@ -314,7 +314,7 @@ channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
                        aiScores.add(biggestScore);
                     } else {
                         String[] domainData = word.split(".");
-                        String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1) : wordData[0]);
+                        String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1) : word);
                         System.out.println(domain);
                         double biggestScore = 0;
                         links: for(String link : mostOfScamLinksWithoutDomains) {
