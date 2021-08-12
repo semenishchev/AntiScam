@@ -336,7 +336,7 @@ public class Listener extends ListenerAdapter {
         }
 
         double avg = average(aiScores);
-        if(vl > 3 && (avg != 1.0 || aiScores.isEmpty())){
+        if(vl > 3 && /*(avg != 1.0 || aiScores.isEmpty())*/){
             messageObject.delete().queue();
             if(occurrences.containsKey(author.getId())){
                 Occurrence occurrence = occurrences.get(author.getId());
