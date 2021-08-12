@@ -300,7 +300,7 @@ channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
                         System.out.println(domain);
 double biggestScore = 0;
                         links: for(String link : mostOfScamLinksWithoutDomains) {
-                            double score = CheckService.check(link, domain.split(".")[0]);
+                            double score = CheckService.check(link, domain.split("\\.")[0]);
                             if(score > biggestScore) biggestScore = score;
                             if (score == 1.0) {
                                 for (String possibleScamLink : mostOfScamLinks) {
