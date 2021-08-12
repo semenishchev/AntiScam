@@ -296,7 +296,8 @@ public class Listener extends ListenerAdapter {
                         String[] wordData = word.replace("https:////", "").split("/");
                         String[] domainData = wordData[0].split(".");
                         String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1) : wordData[0]);
-                        double biggestScore = 0;
+                        System.out.println(domain);
+double biggestScore = 0;
                         links: for(String link : mostOfScamLinksWithoutDomains) {
                             double score = CheckService.check(link, domain.split(".")[0]);
                             if(score > biggestScore) biggestScore = score;
