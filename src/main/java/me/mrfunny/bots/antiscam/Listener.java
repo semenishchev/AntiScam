@@ -293,7 +293,7 @@ public class Listener extends ListenerAdapter {
                             vl = -1;
                             break;
                         }
-                        String[] wordData = word.replace("https://", "").replaceFirst("www\\.", "").split("/");
+                        String[] wordData = word.replace("https:////", "").split("/");
                         String[] domainData = wordData[0].split(".");
                         String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1) : wordData[0]);
                         double biggestScore = 0;
@@ -305,7 +305,7 @@ public class Listener extends ListenerAdapter {
                                     if(possibleScamLink.equalsIgnoreCase(domain)) { break links;}
                                 }
                                 vl = 10;
-                            } else vl  = 10;
+                            } else { vl = 10; }
                              
                             
                        }
