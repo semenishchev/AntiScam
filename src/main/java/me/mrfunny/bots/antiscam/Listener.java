@@ -296,20 +296,20 @@ public class Listener extends ListenerAdapter {
                         String[] wordData = word.replace("https://", "").replaceFirst("www\\.", "").split("/");
                         String[] domainData = wordData[0].split(".");
                         String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1) : wordData[0]);
-                        for (String possibleScamLink : mostOfScamLinks) {
-                            double score = CheckService.check(possibleScamLink, wordData[0]);
-                            
-                            //System.out.println(wordData[0] + " " + score);
+                        double biggestScore = 0;
+                        links: for(String link : mostOfScamLinksWithoutDomains) {
+                            double score = CheckService.check(link, domain.split(".")[0]);
+                            if(score > biggestScore) biggestScore = score;
                             if (score == 1.0) {
-                                aiScores.clear();
-                                aiScores.add(1.0);
-                                break;
-                            }
-                            if (score > 0.45 && score != 1.0) {
+                                for (String possibleScamLink : mostOfScamLinks) {
+                                    if(possibleScamLink.equalsIgnoreCase(domain)) { break links;}
+                                }
                                 vl = 10;
-                                aiScores.add(score);
-                            }
-                        }
+                            } else vl  = 10;
+                             
+                            
+                       }
+                       aiScores.add(biggestScore);
                     } else {
                         for(String possibleScamLink : mostOfScamLinks){
                             double score = CheckService.check(possibleScamLink, word);
