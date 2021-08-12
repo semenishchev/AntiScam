@@ -294,7 +294,7 @@ channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
                             vl = -1;
                             break;
                         }
-                        String[] wordData = word.replace("https:////", "").split("/");
+                        String[] wordData = word.replace("https://", "").split("/");
                         String[] domainData = wordData[0].split(".");
                         String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1) : wordData[0]);
                         System.out.println(domain);
@@ -315,7 +315,7 @@ channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
                     } else {
                         String[] domainData = word.split(".");
                         String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1) : word);
-                        System.out.println(domain);
+                        //System.out.println(domain);
                         double biggestScore = 0;
                         links: for(String link : mostOfScamLinksWithoutDomains) {
                             double score = CheckService.check(link, domain.split("\\.")[0]);
