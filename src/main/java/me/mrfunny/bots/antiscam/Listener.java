@@ -287,7 +287,7 @@ channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
         }
         ArrayList<Double> aiScores = new ArrayList<>();
         for(String line : message.split("\n")){
-            for(String word : line.split(" ")){
+            words: for(String word : line.split(" ")){
                 if(word.contains(".")){
                     if(word.contains("/")){
                         if(word.startsWith("http:")){
@@ -297,7 +297,7 @@ channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
                         String[] wordData = word.replace("https://", "").split("/");
                         String[] domainData = wordData[0].split(".");
                         String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1) : wordData[0]);
-                        System.out.println(domain);
+                        for(String fullyWhitelisted : mostOfScamLinks) { if(fullyWhitelisted.equals(domain)) continue words; }
                         double biggestScore = 0;
                         links: for(String link : mostOfScamLinksWithoutDomains) {
                             double score = CheckService.check(link, domain.split("\\.")[0]);
