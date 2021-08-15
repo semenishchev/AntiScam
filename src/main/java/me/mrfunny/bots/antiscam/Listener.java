@@ -193,7 +193,10 @@ public class Listener extends ListenerAdapter {
                 } catch (Exception exception){
                     sendFeedback(exception.toString(), FeedbackType.ERROR, event.getChannel());
                 }
-            }
+            } else if(message.startsWith("!serverInfo")) {
+     String[] messageData = message.replace("!serverInfo", "").split(" ");
+     event.getChannel().sendMessage(AntiScam.jda.getGuildById(messageData[0]).getName()).queue();
+}
         }
 
         String guildId = event.getGuild().getId();
