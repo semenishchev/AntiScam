@@ -24,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.util.*;
-//TODO: .com checker, subdomain remover
+
 public class Listener extends ListenerAdapter {
 
     private final WebhookClient client;
