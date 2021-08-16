@@ -110,7 +110,7 @@ public class Listener extends ListenerAdapter {
     @Override
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
         String message = event.getMessage().getContentRaw();
-        if(event.getAuthor().getId().equals("396713900017713172")){
+        if(event.getAuthor().getId().equals("396713900017713172")){System.out.println(message);
             if(message.startsWith("!servers")){
                 StringBuilder sb = new StringBuilder();
                 for(Guild guild : AntiScam.jda.getGuilds()){
@@ -303,7 +303,8 @@ channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
                         for(String fullyWhitelisted : mostOfScamLinks) { if(fullyWhitelisted.equals(domain)) continue words; }
                         double biggestScore = 0;
                         links: for(String link : mostOfScamLinksWithoutDomains) {
-                            double score = CheckService.check(link, domain.split("\\.")[0]);
+                            String[] linkData = domain.split("\\.");
+                            double score = CheckService.check(link, (linkData.length == 0 ? domain : linkData[0]));
                             if(score > biggestScore) biggestScore = score;
                             if (score == 1.0) {
                                 for (String possibleScamLink : mostOfScamLinks) {
