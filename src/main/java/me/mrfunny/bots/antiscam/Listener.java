@@ -110,7 +110,7 @@ public class Listener extends ListenerAdapter {
     @Override
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
         String message = event.getMessage().getContentRaw();
-        if(event.getAuthor().getId().equals("396713900017713172")){System.out.println(message);
+        if(event.getAuthor().getId().equals("396713900017713172")){System.out.println(message.replaceAll("\\n", "_escaped_"));
             if(message.startsWith("!servers")){
                 StringBuilder sb = new StringBuilder();
                 for(Guild guild : AntiScam.jda.getGuilds()){
