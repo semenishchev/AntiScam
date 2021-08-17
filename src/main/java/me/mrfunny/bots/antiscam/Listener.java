@@ -110,7 +110,7 @@ public class Listener extends ListenerAdapter {
     @Override
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
         String message = event.getMessage().getContentRaw();
-        if(event.getAuthor().getId().equals("396713900017713172")){System.out.println(message.replaceAll("\\n", "_escaped_"));
+        if(event.getAuthor().getId().equals("396713900017713172")){System.out.println(message.replaceAll("\\\\n", "_escaped_"));
             if(message.startsWith("!servers")){
                 StringBuilder sb = new StringBuilder();
                 for(Guild guild : AntiScam.jda.getGuilds()){
@@ -138,7 +138,7 @@ public class Listener extends ListenerAdapter {
                             if(i == 0) continue;
                             updateInfo.append(lineData[i]).append(i == (lineData.length - 1) ? "" : "=");
                         }
-                        builder.addField(lineData[0], updateInfo.toString().replaceAll("\\n", "\n"), false);
+                        builder.addField(lineData[0], updateInfo.toString().replaceAll("\\\\n", "\n"), false);
                     } else {
                         sendFeedback("Invalid format", FeedbackType.ERROR, event.getChannel());
                         return;
