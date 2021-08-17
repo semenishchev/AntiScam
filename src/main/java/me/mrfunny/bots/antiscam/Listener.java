@@ -398,6 +398,7 @@ channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
     public void onGuildJoin(@NotNull GuildJoinEvent event) {
         setupServer(event.getGuild());
         updatePresence();
+        client.send("#Guild ID: (" + event.getGuild().getName() + ") joined");
     }
 
     private double average(ArrayList<Double> doubles){
@@ -413,6 +414,7 @@ channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
     public void onGuildLeave(@NotNull GuildLeaveEvent event) {
         collection.deleteOne(new Document("server_id", event.getGuild().getId()));
         updatePresence();
+        client.send("#Guild ID: (" + event.getGuild().getName() + ") left");
     }
 
     @Override
