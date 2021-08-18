@@ -305,7 +305,7 @@ public class Listener extends ListenerAdapter {
                         if(word.startsWith("https://bit.ly")){
                             try {
                                 org.jsoup.nodes.Document document = Jsoup.connect(word.replace("bit.ly", "bitly.com") + "+").get();
-                                System.out.println(document.select("a.item-detail--url"));
+                                System.out.println(word.replace("bit.ly", "bitly.com") + "+");
 //                                System.out.println("Bitly");
 //                                System.out.println(element.attributes().get("href"));
                                 // vl = proceedLink(aiScores, element.text());
