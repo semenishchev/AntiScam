@@ -38,7 +38,7 @@ public class Listener extends ListenerAdapter {
     private final String[] blacklistedWords = {"сначал", "эпик", "стим", "нитро", "ненадеж", "ненадёж", "разда", "нитру", "скин", "успел", "everyone"};
     private MongoCollection<Document> collection;
     private MongoCollection<Document> blockedServers;
-    private final String[] mostOfScamLinks = {"discord.com", "youtu.be", "youtube.com", "discord.gg", "steamcommunity.com", "discordstatus.com", "discord.gift", "store.steampowered.com", "tenor.com", "discordapp.net", "media.discordapp.net", "vk.com", "imgur.com"};
+    private final String[] mostOfScamLinks = {"discordapp.net", "discord.com", "youtu.be", "youtube.com", "discord.gg", "steamcommunity.com", "discordstatus.com", "discord.gift", "store.steampowered.com", "tenor.com", "vk.com", "imgur.com"};
     //private final String[] mostOfScamLinksWithoutDomains = {"discord", "youtube", "discord", "steamcommunity", "store.steampowered", "discordapp"};
     
     @Override
@@ -314,11 +314,20 @@ public class Listener extends ListenerAdapter {
                         String[] wordData = word.replace("https://", "").split("/");
                         String[] domainData = wordData[0].split("\\.");
                         String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1) : wordData[0]);
-
-                        for(String fullyWhitelisted : mostOfScamLinks) { if(fullyWhitelisted.equals(domain)) continue words; }
-                        Pair<Integer, Double> pair = proceedLink(domain);
-                        vl = pair.key;
-                        aiScores.add(pair.value);
+                        boolean isFound = false;
+                        for(String fullyWhitelisted : mostOfScamLinks) {
+                            if(fullyWhitelisted.equals(domain)){
+                                isFound = true;
+                                break;
+                            }
+                        }
+                        if(!isFound){
+                            Pair<Integer, Double> pair = proceedLink(domain);
+                            vl = pair.key;
+                            aiScores.add(pair.value);
+                        } else {
+                            continue;
+                        }
                     } else {
                         String[] domainData = word.split("\\.");
                         String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1) : word);
@@ -399,7 +408,7 @@ public class Listener extends ListenerAdapter {
         StringBuilder sb = new StringBuilder();
         for(int i = 0; i < array.length; i++){
             if(i >= index){
-                sb.append(array[i]);   
+                sb.append(array[i]).append((i == array.length - 1 ? "" :"."));
             }
         }
         return sb.toString();
