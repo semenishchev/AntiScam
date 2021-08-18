@@ -21,8 +21,16 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
 
 import java.awt.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class Listener extends ListenerAdapter {
@@ -35,7 +43,7 @@ public class Listener extends ListenerAdapter {
     private final String[] blacklistedWords = {"сначал", "эпик", "стим", "нитро", "ненадеж", "ненадёж", "разда", "нитру", "скин", "успел", "everyone"};
     private MongoCollection<Document> collection;
     private MongoCollection<Document> blockedServers;
-    private final String[] mostOfScamLinks = {"discord.com", "youtube.com", "youtu.be", "discord.gg", "steamcommunity.com", "discord.gift", "store.steampowered.com", "tenor.com", "discordapp.net", "media.discordapp.net", "vk.com", "imgur.com"};
+    private final String[] mostOfScamLinks = {"discord.com", "youtube.com", "youtu.be", "discord.gg", "steamcommunity.com", "discordstatus.com", "discord.gift", "store.steampowered.com", "tenor.com", "discordapp.net", "media.discordapp.net", "vk.com", "imgur.com"};
     //private final String[] mostOfScamLinksWithoutDomains = {"discord", "youtube", "discord", "steamcommunity", "store.steampowered", "discordapp"};
     
     @Override
@@ -76,7 +84,6 @@ public class Listener extends ListenerAdapter {
             }
         } catch (InsufficientPermissionException ignored){
         }
-
     }
 
     public static Color hexToColor(String colorString) {
@@ -200,7 +207,7 @@ public class Listener extends ListenerAdapter {
                     sendFeedback("Server not found", FeedbackType.ERROR, event.getChannel());
                     return;
                 }
-                EmbedBuilder eb = new EmbedBuilder().setTitle("Info about server " + server)
+                EmbedBuilder eb = new EmbedBuilder().setTitle("Info about server " + server).setColor(Color.ORANGE)
                         .addField("ID", server, true)
                         .addField("Name", guild.getName(), true)
                         .addField("Members count", guild.getMemberCount() + "", true)
@@ -377,6 +384,17 @@ channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
     private int proceedLink(ArrayList<Double> aiScores, String domain) {
         double biggestScore = 0;
         int vl = 0;
+        if(domain.startsWith("bit.ly")){
+            try {
+                org.jsoup.nodes.Document document = Jsoup.connect("https://" + domain + "+").get();
+                Element element = document.select("div.item-detail--title").first();
+                domain = element.text();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return -1;
+            }
+        }
+        System.out.println(domain);
         for (String possibleScamLink : mostOfScamLinks) {
             String[] linkData = domain.split("\\.");
             String[] scamLinkData = possibleScamLink.split("\\.");
