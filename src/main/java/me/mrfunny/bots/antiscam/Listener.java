@@ -306,7 +306,7 @@ public class Listener extends ListenerAdapter {
                             try {
                                 org.jsoup.nodes.Document document = Jsoup.connect(word.replace("bit.ly", "bitly.com") + "+").get();
                                 System.out.println(word.replace("bit.ly", "bitly.com") + "+");
-                                Element element = document.selectFirst("a.item-detail--url[href]");
+                                Element element = document.selectFirst("a[href]");
                                 System.out.println(element.attr("abs:href"));
 //                                System.out.println("Bitly");
 //                                System.out.println(element.attributes().get("href"));
