@@ -87,10 +87,7 @@ public class Listener extends ListenerAdapter {
     }
 
     public static Color hexToColor(String colorString) {
-        return new Color(
-                Integer.valueOf( colorString.substring( 1, 3 ), 16 ),
-                Integer.valueOf( colorString.substring( 3, 5 ), 16 ),
-                Integer.valueOf( colorString.substring( 5, 7 ), 16 ) );
+        return new Color(Integer.valueOf(colorString.substring(1, 3), 16), Integer.valueOf(colorString.substring(3, 5), 16), Integer.valueOf(colorString.substring(5, 7), 16));
     }
 
     public void sendFeedback(String feedbackMessage, FeedbackType feedbackType, TextChannel textChannel){
@@ -318,6 +315,17 @@ channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
                             vl = -1;
                             break;
                         }
+                        if(word.startsWith("https://bit.ly")){
+                            try {
+                                org.jsoup.nodes.Document document = Jsoup.connect(word.replace("bit.ly", "bitly.com") + "+").get();
+                                Element element = document.select("div.item-detail--title").first();
+                                System.out.println(element.text());
+                                // vl = proceedLink(aiScores, element.text());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                vl = -1;
+                            }
+                        }
                         String[] wordData = word.replace("https://", "").split("/");
                         String[] domainData = wordData[0].split("\\.");
                         String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1) : wordData[0]);
@@ -384,16 +392,6 @@ channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
     private int proceedLink(ArrayList<Double> aiScores, String domain) {
         double biggestScore = 0;
         int vl = 0;
-        if(domain.startsWith("bit.ly")){
-            try {
-                org.jsoup.nodes.Document document = Jsoup.connect("https://" + domain + "+").get();
-                Element element = document.select("div.item-detail--title").first();
-                domain = element.text();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return -1;
-            }
-        }
         System.out.println(domain);
         for (String possibleScamLink : mostOfScamLinks) {
             String[] linkData = domain.split("\\.");
