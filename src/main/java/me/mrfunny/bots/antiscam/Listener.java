@@ -39,7 +39,6 @@ public class Listener extends ListenerAdapter {
     public Listener(String webhookUrl){
         client = WebhookClient.withUrl(webhookUrl);
     }
-    private final HashMap<String, Occurrence> occurrences = new HashMap<>();
     private final String[] blacklistedWords = {"сначал", "эпик", "стим", "нитро", "ненадеж", "ненадёж", "разда", "нитру", "скин", "успел", "everyone"};
     private MongoCollection<Document> collection;
     private MongoCollection<Document> blockedServers;
@@ -58,17 +57,6 @@ public class Listener extends ListenerAdapter {
                 setupServer(guild);
             }
         }
-        Timer t = new Timer();
-        t.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                for(Occurrence occurrence : occurrences.values()){
-                    if((System.currentTimeMillis() - occurrence.getLastOccurrence()) >= 600000){
-                        occurrences.remove(occurrence.getId());
-                    }
-                }
-            }
-        }, 1000, 60000);
     }
 
     private void setupServer(Guild guild){
@@ -319,12 +307,14 @@ channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
                             try {
                                 org.jsoup.nodes.Document document = Jsoup.connect(word.replace("bit.ly", "bitly.com") + "+").get();
                                 Element element = document.select("div.item-detail--title").first();
+                                System.out.println("Bitly");
                                 System.out.println(element.text());
                                 // vl = proceedLink(aiScores, element.text());
                             } catch (IOException e) {
-                                e.printStackTrace();
+                                System.out.println("Error: " + e);
                                 vl = -1;
                             }
+                            return;
                         }
                         String[] wordData = word.replace("https://", "").split("/");
                         String[] domainData = wordData[0].split("\\.");
@@ -360,13 +350,6 @@ channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
         double avg = average(aiScores);
         if(vl > 3 && (avg != 1.0 || aiScores.isEmpty())){
             messageObject.delete().queue();
-            if(occurrences.containsKey(author.getId())){
-                Occurrence occurrence = occurrences.get(author.getId());
-                occurrence.addOccurrence();
-            } else {
-                Occurrence occurrence = new Occurrence(author.getId());
-                occurrences.put(author.getId(), occurrence);
-            }
             guild.getTextChannelById(serverInfo.getString("logs_channel_id"));
             TextChannel channel = guild.getTextChannelById(serverInfo.getString("logs_channel_id"));
             if(channel == null){
