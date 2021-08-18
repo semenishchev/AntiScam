@@ -1,4 +1,4 @@
-package me.mrfunny.bots.antiscam;
+package me.mrfunny.bots.antiscam.secret;
 
 import com.mongodb.ConnectionString;
 

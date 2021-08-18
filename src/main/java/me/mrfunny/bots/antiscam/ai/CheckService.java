@@ -3,7 +3,7 @@ package me.mrfunny.bots.antiscam.ai;
 import net.ricecode.similarity.*;
 
 public class CheckService {
-    public static double check(String string1, String string2){
+    public static double score(String string1, String string2){
         if(string1.equalsIgnoreCase(string2)){
             return 1.0;
         }

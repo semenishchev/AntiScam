@@ -6,6 +6,9 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import me.mrfunny.bots.antiscam.ai.CheckService;
+import me.mrfunny.bots.antiscam.secret.SuperSecretClass;
+import me.mrfunny.bots.antiscam.util.FeedbackType;
+import me.mrfunny.bots.antiscam.util.Pair;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
@@ -39,7 +42,6 @@ public class Listener extends ListenerAdapter {
     private MongoCollection<Document> collection;
     private MongoCollection<Document> blockedServers;
     private final String[] mostOfScamLinks = {"discordapp.net", "discord.com", "youtu.be", "youtube.com", "discord.gg", "steamcommunity.com", "discordstatus.com", "discord.gift", "store.steampowered.com", "tenor.com", "vk.com", "imgur.com"};
-    //private final String[] mostOfScamLinksWithoutDomains = {"discord", "youtube", "discord", "steamcommunity", "store.steampowered", "discordapp"};
     
     @Override
     public void onReady(@NotNull ReadyEvent event) {
@@ -159,7 +161,6 @@ public class Listener extends ListenerAdapter {
                 } catch (Exception exception){
                     sendFeedback(exception.toString(), FeedbackType.ERROR, event.getChannel());
                 }
-
             } else if(message.startsWith("!banServer")){
                 try {
                     String[] messageData = message.replace("!updateState", "").split(" ");
@@ -202,7 +203,6 @@ public class Listener extends ListenerAdapter {
         if(serverInfo == null){
             setupServer(event.getGuild());
         }
-
         if(event.getAuthor().isBot() || event.getAuthor().isSystem()) return;
         String prefix = serverInfo != null ? serverInfo.getString("prefix") : "a!";
         if(message.startsWith(prefix)){
@@ -271,15 +271,6 @@ public class Listener extends ListenerAdapter {
         checkMessage(event.getMessage(), event.getAuthor(), event.getGuild(), serverInfo, event.getChannel(), false);
     }
 
-    public void sendHelp(TextChannel channel, String prefix){
-        channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
-                .addField(prefix + "prefix <new_prefix>", "Sets up new prefix for me", false)
-                .addField(prefix + "setUpdatesChannel #channel", "Sets channel for my updates", false)
-                .addField(prefix + "setLogsChannel #channel", "Sets channel where logs will appear (possible scam message etc.)", false)
-                .addField(prefix + "error <your message>", "If you get some error, or bot does not delete scam messages or vice versa deletes normal messages", false)
-                .build()).queue();
-    }
-
     public void checkMessage(Message messageObject, User author, Guild guild, Document serverInfo, TextChannel genericChannel, boolean edited){
         String message = messageObject.getContentRaw();
 
@@ -313,7 +304,7 @@ public class Listener extends ListenerAdapter {
                         }
                         String[] wordData = word.replace("https://", "").split("/");
                         String[] domainData = wordData[0].split("\\.");
-                        String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1) : wordData[0]);
+                        String domain = (domainData.length > 2 ? joinFromIndex(domainData) : wordData[0]);
                         boolean isFound = false;
                         for(String fullyWhitelisted : mostOfScamLinks) {
                             if(fullyWhitelisted.equals(domain)){
@@ -330,7 +321,7 @@ public class Listener extends ListenerAdapter {
                         }
                     } else {
                         String[] domainData = word.split("\\.");
-                        String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1) : word);
+                        String domain = (domainData.length > 2 ? joinFromIndex(domainData) : word);
                         for(String fullyWhitelisted : mostOfScamLinks) {
                             String[] scamLinkData = fullyWhitelisted.split("\\.");
                             String possibleScamLink = (scamLinkData.length == 0 ? fullyWhitelisted : scamLinkData[0]);
@@ -381,39 +372,6 @@ public class Listener extends ListenerAdapter {
         }
     }
 
-    private Pair<Integer, Double> proceedLink(String domain) {
-        double biggestScore = 0;
-        int vl = 0;
-        for (String possibleScamLink : mostOfScamLinks) {
-            String[] linkData = domain.split("\\.");
-            String[] scamLinkData = possibleScamLink.split("\\.");
-            String link = (scamLinkData.length == 0 ? possibleScamLink : scamLinkData[0]);
-            if(domain.startsWith(link)){
-                if(!domain.equals(possibleScamLink)){
-                    vl = 10;
-                }
-            } else {
-                double score = CheckService.check(link, (linkData.length == 0 ? domain : linkData[0]));
-                if(score > biggestScore){
-                    biggestScore = score;
-                }
-                if(score > 0.46D) vl = 10;
-            }
-
-        }
-        return new Pair<>(vl, biggestScore);
-    }
-
-    private String joinFromIndex(String[] array, int index){
-        StringBuilder sb = new StringBuilder();
-        for(int i = 0; i < array.length; i++){
-            if(i >= index){
-                sb.append(array[i]).append((i == array.length - 1 ? "" :"."));
-            }
-        }
-        return sb.toString();
-     }
-
     @Override
     public void onGuildJoin(@NotNull GuildJoinEvent event) {
         setupServer(event.getGuild());
@@ -421,14 +379,6 @@ public class Listener extends ListenerAdapter {
         client.send("#Guild ID: (" + event.getGuild().getName() + ") joined");
     }
 
-    private double average(ArrayList<Double> doubles){
-        double preFinal = 0;
-        for(double double_ : doubles){
-            preFinal += double_;
-        }
-        if(doubles.size() == 0) return 0;
-        return preFinal / (double) doubles.size();
-    }
 
     @Override
     public void onGuildLeave(@NotNull GuildLeaveEvent event) {
@@ -440,10 +390,6 @@ public class Listener extends ListenerAdapter {
     @Override
     public void onGuildBan(@NotNull GuildBanEvent event) {
         updatePresence();
-    }
-
-    public void updatePresence(){
-        AntiScam.jda.getPresence().setPresence(Activity.watching("a!help | " + AntiScam.jda.getGuilds().size() + " servers"), true);
     }
 
     @Override
@@ -459,5 +405,60 @@ public class Listener extends ListenerAdapter {
         } else {
             return string;
         }
+    }
+
+    public void updatePresence(){
+        AntiScam.jda.getPresence().setPresence(Activity.watching("a!help | " + AntiScam.jda.getGuilds().size() + " servers"), true);
+    }
+
+    private double average(ArrayList<Double> doubles){
+        double preFinal = 0;
+        for(double double_ : doubles){
+            preFinal += double_;
+        }
+        if(doubles.size() == 0) return 0;
+        return preFinal / (double) doubles.size();
+    }
+
+    private Pair<Integer, Double> proceedLink(String domain) {
+        double biggestScore = 0;
+        int vl = 0;
+        for (String possibleScamLink : mostOfScamLinks) {
+            String[] linkData = domain.split("\\.");
+            String[] scamLinkData = possibleScamLink.split("\\.");
+            String link = (scamLinkData.length == 0 ? possibleScamLink : scamLinkData[0]);
+            if(domain.startsWith(link)){
+                if(!domain.equals(possibleScamLink)){
+                    vl = 10;
+                }
+            } else {
+                double score = CheckService.score(link, (linkData.length == 0 ? domain : linkData[0]));
+                if(score > biggestScore){
+                    biggestScore = score;
+                }
+                if(score > 0.46D) vl = 10;
+            }
+
+        }
+        return new Pair<>(vl, biggestScore);
+    }
+
+    private String joinFromIndex(String[] array){
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < array.length; i++){
+            if(i >= 1){
+                sb.append(array[i]).append((i == array.length - 1 ? "" :"."));
+            }
+        }
+        return sb.toString();
+    }
+
+    public void sendHelp(TextChannel channel, String prefix){
+        channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
+                .addField(prefix + "prefix <new_prefix>", "Sets up new prefix for me", false)
+                .addField(prefix + "setUpdatesChannel #channel", "Sets channel for my updates", false)
+                .addField(prefix + "setLogsChannel #channel", "Sets channel where logs will appear (possible scam message etc.)", false)
+                .addField(prefix + "error <your message>", "If you get some error, or bot does not delete scam messages or vice versa deletes normal messages", false)
+                .build()).queue();
     }
 }

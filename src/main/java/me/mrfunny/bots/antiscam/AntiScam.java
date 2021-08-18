@@ -1,5 +1,6 @@
 package me.mrfunny.bots.antiscam;
 
+import me.mrfunny.bots.antiscam.secret.SuperSecretClass;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 
