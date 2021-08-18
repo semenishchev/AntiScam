@@ -198,7 +198,7 @@ public class Listener extends ListenerAdapter {
                         .addField("ID", server, true)
                         .addField("Name", guild.getName(), true)
                         .addField("Members count", guild.getMemberCount() + "", true)
-                        .addField("Owner" ,guild.getOwner().getUser().getName() + "#" + guild.getOwner().getUser().getDiscriminator(), false);
+                        .addField("Owner" ,guild.getOwner() == null ? "pepega" : guild.getOwner().getUser().getName() + "#" + guild.getOwner().getUser().getDiscriminator(), false);
                 event.getChannel().sendMessageEmbeds(eb.build()).queue();
             }
         }
