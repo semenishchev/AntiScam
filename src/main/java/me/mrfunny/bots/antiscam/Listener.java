@@ -22,15 +22,9 @@ import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Element;
 
 import java.awt.*;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -322,7 +316,9 @@ public class Listener extends ListenerAdapter {
                         String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1) : wordData[0]);
 
                         for(String fullyWhitelisted : mostOfScamLinks) { if(fullyWhitelisted.equals(domain)) continue words; }
-                        vl = proceedLink(aiScores, domain);
+                        Pair<Integer, Double> pair = proceedLink(domain);
+                        vl = pair.key;
+                        aiScores.add(pair.value);
                     } else {
                         String[] domainData = word.split("\\.");
                         String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1) : word);
@@ -331,7 +327,9 @@ public class Listener extends ListenerAdapter {
                             String possibleScamLink = (scamLinkData.length == 0 ? fullyWhitelisted : scamLinkData[0]);
                             if(possibleScamLink.equals(domain)) continue words;
                         }
-                        vl = proceedLink(aiScores, domain);
+                        Pair<Integer, Double> pair = proceedLink(domain);
+                        vl = pair.key;
+                        aiScores.add(pair.value);
                     }
                 }
                 if(word.startsWith("http:")){
@@ -374,7 +372,7 @@ public class Listener extends ListenerAdapter {
         }
     }
 
-    private int proceedLink(ArrayList<Double> aiScores, String domain) {
+    private Pair<Integer, Double> proceedLink(String domain) {
         double biggestScore = 0;
         int vl = 0;
         for (String possibleScamLink : mostOfScamLinks) {
@@ -394,8 +392,7 @@ public class Listener extends ListenerAdapter {
             }
 
         }
-        aiScores.add(biggestScore);
-        return vl;
+        return new Pair<>(vl, biggestScore);
     }
 
     private String joinFromIndex(String[] array, int index){
