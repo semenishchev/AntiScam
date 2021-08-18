@@ -307,21 +307,20 @@ public class Listener extends ListenerAdapter {
                         if(word.startsWith("https://bit.ly")){
                             try {
                                 org.jsoup.nodes.Document document = Jsoup.connect(word.replace("bit.ly", "bitly.com") + "+").get();
-                                Pattern pattern = Pattern.compile("long_url.+?(?=\",)");
+                                Pattern pattern = Pattern.compile("(long_url.+?(?=\",))");
                                 Matcher matcher = pattern.matcher(document.toString());
-                                System.out.println(document.toString());
-//                                System.out.println("Bitly");
-//                                System.out.println(element.attributes().get("href"));
-                                // vl = proceedLink(aiScores, element.text());
+                                if(matcher.find()){
+                                    word = matcher.group(1).replaceAll("long_url\": \"", "");
+                                }
                             } catch (IOException e) {
                                 System.out.println("Error: " + e);
                                 vl = -1;
                             }
-                            return;
                         }
                         String[] wordData = word.replace("https://", "").split("/");
                         String[] domainData = wordData[0].split("\\.");
                         String domain = (domainData.length > 2 ? joinFromIndex(domainData, 1) : wordData[0]);
+
                         for(String fullyWhitelisted : mostOfScamLinks) { if(fullyWhitelisted.equals(domain)) continue words; }
                         vl = proceedLink(aiScores, domain);
                     } else {
@@ -378,7 +377,6 @@ public class Listener extends ListenerAdapter {
     private int proceedLink(ArrayList<Double> aiScores, String domain) {
         double biggestScore = 0;
         int vl = 0;
-        System.out.println("Dom: " + domain);
         for (String possibleScamLink : mostOfScamLinks) {
             String[] linkData = domain.split("\\.");
             String[] scamLinkData = possibleScamLink.split("\\.");
