@@ -309,7 +309,7 @@ public class Listener extends ListenerAdapter {
                                 org.jsoup.nodes.Document document = Jsoup.connect(word.replace("bit.ly", "bitly.com") + "+").get();
                                 Pattern pattern = Pattern.compile("long_url.+?(?=\",)");
                                 Matcher matcher = pattern.matcher(document.toString());
-                                System.out.println(matcher.group(1));
+                                System.out.println(document.toString());
 //                                System.out.println("Bitly");
 //                                System.out.println(element.attributes().get("href"));
                                 // vl = proceedLink(aiScores, element.text());
