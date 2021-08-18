@@ -305,9 +305,9 @@ public class Listener extends ListenerAdapter {
                         if(word.startsWith("https://bit.ly")){
                             try {
                                 org.jsoup.nodes.Document document = Jsoup.connect(word.replace("bit.ly", "bitly.com") + "+").get();
-                                Element element = document.select("a.item-detail--url").first();
-                                System.out.println("Bitly");
-                                System.out.println(element.attributes().get("href"));
+                                System.out.println(document.select("a.item-detail--url"));
+//                                System.out.println("Bitly");
+//                                System.out.println(element.attributes().get("href"));
                                 // vl = proceedLink(aiScores, element.text());
                             } catch (IOException e) {
                                 System.out.println("Error: " + e);
@@ -374,7 +374,7 @@ public class Listener extends ListenerAdapter {
     private int proceedLink(ArrayList<Double> aiScores, String domain) {
         double biggestScore = 0;
         int vl = 0;
-        System.out.println(domain);
+        System.out.println("Dom: " + domain);
         for (String possibleScamLink : mostOfScamLinks) {
             String[] linkData = domain.split("\\.");
             String[] scamLinkData = possibleScamLink.split("\\.");
