@@ -276,8 +276,7 @@ public class Listener extends ListenerAdapter {
     }
 
     public void sendHelp(TextChannel channel, String prefix){
-         System.out.println("call");    
-channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
+        channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
                 .addField(prefix + "prefix <new_prefix>", "Sets up new prefix for me", false)
                 .addField(prefix + "setUpdatesChannel #channel", "Sets channel for my updates", false)
                 .addField(prefix + "setLogsChannel #channel", "Sets channel where logs will appear (possible scam message etc.)", false)
@@ -306,9 +305,9 @@ channel.sendMessageEmbeds(new EmbedBuilder().setTitle("List of commands")
                         if(word.startsWith("https://bit.ly")){
                             try {
                                 org.jsoup.nodes.Document document = Jsoup.connect(word.replace("bit.ly", "bitly.com") + "+").get();
-                                Element element = document.select("div.item-detail--title").first();
+                                Element element = document.select("a.item-detail--url").first();
                                 System.out.println("Bitly");
-                                System.out.println(element.text());
+                                System.out.println(element.attributes().get("href"));
                                 // vl = proceedLink(aiScores, element.text());
                             } catch (IOException e) {
                                 System.out.println("Error: " + e);
