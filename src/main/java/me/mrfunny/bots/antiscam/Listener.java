@@ -41,7 +41,7 @@ public class Listener extends ListenerAdapter {
     private final String[] blacklistedWords = {"сначал", "эпик", "стим", "нитро", "ненадеж", "ненадёж", "разда", "нитру", "скин", "успел", "everyone"};
     private MongoCollection<Document> collection;
     private MongoCollection<Document> blockedServers;
-    private final String[] mostOfScamLinks = {"discordapp.net", "discord.com", "youtu.be", "youtube.com", "discord.gg", "steamcommunity.com", "discordstatus.com", "discord.gift", "store.steampowered.com", "tenor.com", "vk.com", "imgur.com"};
+    private final String[] mostOfScamLinks = {"discordapp.net", "discordapp.com", "discord.com", "youtu.be", "youtube.com", "discord.gg", "steamcommunity.com", "discordstatus.com", "discord.gift", "store.steampowered.com", "tenor.com", "vk.com", "imgur.com"};
     
     @Override
     public void onReady(@NotNull ReadyEvent event) {
