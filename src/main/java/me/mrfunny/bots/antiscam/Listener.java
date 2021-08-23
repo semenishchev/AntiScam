@@ -281,6 +281,7 @@ public class Listener extends ListenerAdapter {
             }
         }
         ArrayList<Double> aiScores = new ArrayList<>();
+        String addition = "";
         for(String line : message.split("\n")){
             words: for(String word : line.split(" ")){
                 if(word.contains(".")){
@@ -329,6 +330,7 @@ public class Listener extends ListenerAdapter {
                         }
                         Pair<Integer, Double> pair = proceedLink(domain);
                         vl = pair.key;
+                        addition = pair.addition;
                         aiScores.add(pair.value);
                     }
                 }
@@ -364,7 +366,7 @@ public class Listener extends ListenerAdapter {
                             + " (ID: "
                             + author.getId() + ")"
                     ).addField("Message" + (edited ? " (edited message)" : ""), message, false)
-                    .addField("AI", "Score: " + average(aiScores), false)
+                    .addField("AI", "Score: " + average(aiScores) + ", addition: " + addition, false)
                     .setFooter("From 0.45 to 0.99 is possibly a scam. If not, report this via " + serverInfo.getString("prefix") + "error falsePositive <message> <score>")
                     .build()).queue();
         } else if(vl == -1){
@@ -423,6 +425,7 @@ public class Listener extends ListenerAdapter {
     private Pair<Integer, Double> proceedLink(String domain) {
         double biggestScore = 0;
         int vl = 0;
+        String lastScamLink = "";
         for (String possibleScamLink : mostOfScamLinks) {
             String[] linkData = domain.split("\\.");
             String[] scamLinkData = possibleScamLink.split("\\.");
@@ -435,12 +438,15 @@ public class Listener extends ListenerAdapter {
                 double score = CheckService.score(link, (linkData.length == 0 ? domain : linkData[0]));
                 if(score > biggestScore){
                     biggestScore = score;
+                    lastScamLink = possibleScamLink;
                 }
                 if(score > 0.46D) vl = 10;
             }
 
         }
-        return new Pair<>(vl, biggestScore);
+        Pair<Integer, Double> pair =  new Pair<>(vl, biggestScore);
+        pair.addition = lastScamLink;
+        return pair;
     }
 
     private String joinFromIndex(String[] array){
