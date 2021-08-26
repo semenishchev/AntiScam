@@ -357,6 +357,7 @@ public class Listener extends ListenerAdapter {
             if(channel == null){
                 channel = genericChannel;
             }
+            System.out.println("Processing scam message: " + message);
             channel.sendMessage("User " + author.getAsMention() + " sent scam message!").queue();
             channel.sendMessageEmbeds(new EmbedBuilder()
                     .setTitle("User "
