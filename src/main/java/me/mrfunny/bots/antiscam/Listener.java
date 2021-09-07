@@ -350,7 +350,7 @@ public class Listener extends ListenerAdapter {
         }
         double avg = 0.0;
         aiCheck: {
-        if(aiScores.isEmpty() break aiCheck;
+        if(aiScores.isEmpty()) break aiCheck;
         avg = average(aiScores);
         if(avg != 1.0) vl = 10;
         }
