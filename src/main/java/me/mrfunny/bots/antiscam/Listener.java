@@ -348,9 +348,14 @@ public class Listener extends ListenerAdapter {
                 }
             }
         }
-
-        double avg = average(aiScores);
-        if(vl > 3 && (avg != 1.0 || aiScores.isEmpty())){
+        double avg = 0.0;
+        aiCheck: {
+        if(aiScores.isEmpty() break aiCheck;
+        avg = average(aiScores);
+        if(avg != 1.0) vl = 10;
+        }
+       
+        if(vl > 3){
             messageObject.delete().queue();
             guild.getTextChannelById(serverInfo.getString("logs_channel_id"));
             TextChannel channel = guild.getTextChannelById(serverInfo.getString("logs_channel_id"));
