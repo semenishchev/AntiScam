@@ -284,7 +284,7 @@ public class Listener extends ListenerAdapter {
         String addition = "";
         for(String line : message.split("\n")){
             words: for(String word : line.split(" ")){
-                if(word.contains("\\.") && word.endsWith("\\.")){
+                if(word.contains("\\.") && !word.endsWith("\\.")){
                     if(word.contains("/")){
                         if(word.startsWith("http:")){
                             vl = -1;
