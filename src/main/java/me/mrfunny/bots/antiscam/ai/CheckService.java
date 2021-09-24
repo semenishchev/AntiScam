@@ -4,7 +4,7 @@ import net.ricecode.similarity.*;
 
 public class CheckService {
 
-    private String[] blockedDomains = {"cs-riptide"};
+    private static String[] blockedDomains = {"cs-riptide"};
 
     public static double score(String string1, String string2){
         for(String blockedDomain : blockedDomains){
